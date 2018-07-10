@@ -1,4 +1,5 @@
 # Custom
+*.nfs*
 dataset/
 output/
 .DS_Store
