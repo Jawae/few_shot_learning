@@ -46,9 +46,11 @@ def init_sampler(opt, labels, mode):
 
 
 def init_dataloader(opt, mode):
+    print('{}'.format(mode))
     dataset = init_dataset(opt, mode)
     sampler = init_sampler(opt, dataset.y, mode)
     dataloader = torch.utils.data.DataLoader(dataset, batch_sampler=sampler)
+    print('\n')
     return dataloader
 
 
@@ -118,7 +120,8 @@ def train(opt, tr_dataloader, model, optim, lr_scheduler, val_dataloader=None):
             x, y = x.to(device), y.to(device)
 
             model_output = model(x)
-            loss, acc = loss_fn(model_output, target=y, n_support=opt.num_support_tr)
+            loss, acc = loss_fn(model_output,
+                                target=y, n_support=opt.num_support_tr, distance=opt.distance)
 
             loss.backward()
             optim.step()
@@ -128,7 +131,9 @@ def train(opt, tr_dataloader, model, optim, lr_scheduler, val_dataloader=None):
         avg_loss = np.mean(train_loss[-opt.iterations:])
         avg_acc = np.mean(train_acc[-opt.iterations:])
         print('Avg Train Loss: {}, Avg Train Acc: {}'.format(avg_loss, avg_acc))
+
         lr_scheduler.step()
+
         if val_dataloader is None:
             continue
         val_iter = iter(val_dataloader)
@@ -137,7 +142,8 @@ def train(opt, tr_dataloader, model, optim, lr_scheduler, val_dataloader=None):
             x, y = batch
             x, y = x.to(device), y.to(device)
             model_output = model(x)
-            loss, acc = loss_fn(model_output, target=y, n_support=opt.num_support_val)
+            loss, acc = loss_fn(model_output,
+                                target=y, n_support=opt.num_support_val, distance=opt.distance)
             val_loss.append(loss.item())
             val_acc.append(acc.item())
         avg_loss = np.mean(val_loss[-opt.iterations:])
@@ -175,7 +181,8 @@ def test(opt, test_dataloader, model):
             x, y = batch
             x, y = x.to(device), y.to(device)
             model_output = model(x)
-            _, acc = loss_fn(model_output, target=y, n_support=opt.num_support_tr)
+            _, acc = loss_fn(model_output,
+                             target=y, n_support=opt.num_support_tr, distance=opt.distance)
             avg_acc.append(acc.item())
     avg_acc = np.mean(avg_acc)
     print('Test Acc: {}'.format(avg_acc))
@@ -205,8 +212,8 @@ def test(opt, test_dataloader, model):
 # def main():
 options = get_parser().parse_args()
 options.experiment_folder = os.path.join(
-    options.experiment_root, 'nsTr_{}_nsVa_{}_cVa_{}'.format(
-        options.num_support_tr, options.num_support_val, options.classes_per_it_val))
+    options.experiment_root, 'nsTr_{}_nsVa_{}_cVa_{}{}'.format(
+        options.num_support_tr, options.num_support_val, options.classes_per_it_val, options.suffix))
 if not os.path.exists(options.experiment_folder):
     os.makedirs(options.experiment_folder)
 
@@ -224,6 +231,7 @@ model = init_protonet(options)
 optim = init_optim(options, model)
 lr_scheduler = init_lr_scheduler(options, optim)
 
+# TRAINING PROCEDURE
 res = train(opt=options,
             tr_dataloader=tr_dataloader,
             val_dataloader=val_dataloader,
@@ -240,6 +248,8 @@ test(opt=options, test_dataloader=test_dataloader, model=model)
 model.load_state_dict(best_state_ever)
 print('Testing with best model..')
 test(opt=options, test_dataloader=test_dataloader, model=model)
+
+print('Saved to folder ({})'.format(options.experiment_folder))
 
 # optim = init_optim(options, model)
 # lr_scheduler = init_lr_scheduler(options, optim)

@@ -14,6 +14,10 @@ def get_parser():
                         help='root where to store models, losses and accuracies',
                         default='output')
 
+    parser.add_argument('-suffix',
+                        type=str,
+                        default='')
+
     parser.add_argument('-nep', '--epochs',
                         type=int,
                         help='number of epochs to train for',
@@ -78,6 +82,11 @@ def get_parser():
                         type=int,
                         help='put -1 if in CPU mode',
                         default=0)
+
+    parser.add_argument('-dist', '--distance',
+                        type=str,
+                        help='cosine or euclidean',
+                        default='euclidean')
 
     # parser.add_argument('--cuda',
     #                     action='store_true',

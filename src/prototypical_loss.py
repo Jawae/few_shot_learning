@@ -17,6 +17,17 @@ from torch.nn.modules.loss import _assert_no_grad
 #         _assert_no_grad(target)
 #         return prototypical_loss(input, target, self.n_support)
 
+def cosine_dist(x, y):
+    n = x.size(0)
+    m = y.size(0)
+    d = x.size(1)
+    if d != y.size(1):
+        raise Exception
+
+    x = x.unsqueeze(2).expand(n, d, m)
+    y = y.unsqueeze(2).expand(m, d, n).permute(2, 1, 0)
+    return F.cosine_similarity(x, y)
+
 
 def euclidean_dist(x, y):
     """
@@ -36,7 +47,7 @@ def euclidean_dist(x, y):
     return torch.pow(x - y, 2).sum(2)
 
 
-def prototypical_loss(input, target, n_support):
+def prototypical_loss(input, target, n_support, **args):
     """
     Inspired by https://github.com/jakesnell/prototypical-networks/blob/master/protonets/models/few_shot.py
 
@@ -74,7 +85,10 @@ def prototypical_loss(input, target, n_support):
     query_idxs = torch.stack(list(map(lambda c: target_cpu.eq(c).nonzero()[n_support:], classes))).view(-1)
 
     query_samples = input.to('cpu')[query_idxs]
-    dists = euclidean_dist(query_samples, prototypes)
+    if args['distance'] == 'euclidean':
+        dists = euclidean_dist(query_samples, prototypes)
+    elif args['distance'] == 'cosine':
+        dists = cosine_dist(query_samples, prototypes)
 
     log_p_y = F.log_softmax(-dists, dim=1).view(n_classes, n_query, -1)
 
