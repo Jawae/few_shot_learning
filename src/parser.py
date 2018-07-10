@@ -7,12 +7,12 @@ def get_parser():
     parser.add_argument('-root', '--dataset_root',
                         type=str,
                         help='path to dataset',
-                        default='../dataset')
+                        default='dataset')
 
     parser.add_argument('-exp', '--experiment_root',
                         type=str,
                         help='root where to store models, losses and accuracies',
-                        default='../output')
+                        default='output')
 
     parser.add_argument('-nep', '--epochs',
                         type=int,
@@ -74,8 +74,13 @@ def get_parser():
                         help='input for the manual seeds initializations',
                         default=7)
 
-    parser.add_argument('--cuda',
-                        action='store_true',
-                        help='enables cuda')
+    parser.add_argument('-device_id', '--gpu_id',
+                        type=int,
+                        help='put -1 if in CPU mode',
+                        default=0)
+
+    # parser.add_argument('--cuda',
+    #                     action='store_true',
+    #                     help='enables cuda')
 
     return parser

@@ -4,25 +4,24 @@ import torch
 
 
 class PrototypicalBatchSampler(object):
-    '''
+    """
     PrototypicalBatchSampler: yield a batch of indexes at each iteration.
     Indexes are calculated by keeping in account 'classes_per_it' and 'num_samples',
     In fact at every iteration the batch indexes will refer to  'num_support' + 'num_query' samples
     for 'classes_per_it' random classes.
 
     __len__ returns the number of episodes per epoch (same as 'self.iterations').
-    '''
+    """
 
     def __init__(self, labels, classes_per_it, num_samples, iterations):
-        '''
+        """
         Initialize the PrototypicalBatchSampler object
-        Args:
-        - labels: an iterable containing all the labels for the current dataset
-        samples indexes will be infered from this iterable.
-        - classes_per_it: number of random classes for each iteration
-        - num_samples: number of samples for each iteration for each class (support + query)
-        - iterations: number of iterations (episodes) per epoch
-        '''
+        :param labels: an iterable containing all the labels for the current dataset
+        samples indexes will be inferred from this iterable.
+        :param classes_per_it: number of random classes for each iteration
+        :param num_samples: number of samples for each iteration for each class (support + query)
+        :param iterations: number of iterations (episodes) per epoch
+        """
         super(PrototypicalBatchSampler, self).__init__()
         self.labels = labels
         self.classes_per_it = classes_per_it

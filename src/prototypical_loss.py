@@ -5,23 +5,23 @@ from torch.nn.modules import Module
 from torch.nn.modules.loss import _assert_no_grad
 
 
-class PrototypicalLoss(Module):
-    '''
-    Loss class deriving from Module for the prototypical loss function defined below
-    '''
-    def __init__(self, n_support):
-        super(PrototypicalLoss, self).__init__()
-        self.n_support = n_support
-
-    def forward(self, input, target):
-        _assert_no_grad(target)
-        return prototypical_loss(input, target, self.n_support)
+# class PrototypicalLoss(Module):
+#     """
+#     Loss class deriving from Module for the prototypical loss function defined below
+#     """
+#     def __init__(self, n_support):
+#         super(PrototypicalLoss, self).__init__()
+#         self.n_support = n_support
+#
+#     def forward(self, input, target):
+#         _assert_no_grad(target)
+#         return prototypical_loss(input, target, self.n_support)
 
 
 def euclidean_dist(x, y):
-    '''
+    """
     Compute euclidean distance between two tensors
-    '''
+    """
     # x: N x D
     # y: M x D
     n = x.size(0)
@@ -37,21 +37,22 @@ def euclidean_dist(x, y):
 
 
 def prototypical_loss(input, target, n_support):
-    '''
+    """
     Inspired by https://github.com/jakesnell/prototypical-networks/blob/master/protonets/models/few_shot.py
 
     Compute the barycentres by averaging the features of n_support
     samples for each class in target, computes then the distances from each
     samples' features to each one of the barycentres, computes the
     log_probability for each n_query samples for each one of the current
-    classes, of appartaining to a class c, loss and accuracy are then computed
-    and returned
-    Args:
-    - input: the model output for a batch of samples
-    - target: ground truth for the above batch of samples
-    - n_support: number of samples to keep in account when computing
-      barycentres, for each one of the current classes
-    '''
+    classes, of appartaining to a class c, loss and accuracy are then computed and returned
+
+    :param input: the model output for a batch of samples
+    :param target: ground truth for the above batch of samples
+    :param n_support: number of samples to keep in account when computing
+    barycentres, for each one of the current classes
+    :return:
+    """
+    # hyli: why to cpu
     target_cpu = target.to('cpu')
     input_cpu = input.to('cpu')
 

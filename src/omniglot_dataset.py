@@ -16,7 +16,8 @@ IMG_CACHE = {}
 
 
 class OmniglotDataset(data.Dataset):
-    vinalys_baseurl = 'https://raw.githubusercontent.com/jakesnell/prototypical-networks/master/data/omniglot/splits/vinyals/'
+    vinalys_baseurl = \
+        'https://raw.githubusercontent.com/jakesnell/prototypical-networks/master/data/omniglot/splits/vinyals/'
     vinyals_split_sizes = {
         'test': vinalys_baseurl + 'test.txt',
         'train': vinalys_baseurl + 'train.txt',
