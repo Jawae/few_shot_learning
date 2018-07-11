@@ -26,7 +26,7 @@ def cosine_dist(x, y):
 
     x = x.unsqueeze(2).expand(n, d, m)
     y = y.unsqueeze(2).expand(m, d, n).permute(2, 1, 0)
-    return F.cosine_similarity(x, y)
+    return 1 - F.cosine_similarity(x, y)
 
 
 def euclidean_dist(x, y):
