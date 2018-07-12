@@ -1,6 +1,7 @@
 # Custom
 *.nfs*
-dataset/
+dataset/omniglot
+dataset/miniImagenet
 output/
 .DS_Store
 .idea

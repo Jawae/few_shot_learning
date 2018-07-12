@@ -7,7 +7,7 @@ def get_parser():
     parser.add_argument('-root', '--dataset_root',
                         type=str,
                         help='path to dataset',
-                        default='dataset')
+                        default='dataset/omniglot')
 
     parser.add_argument('-exp', '--experiment_root',
                         type=str,
