@@ -47,7 +47,7 @@ for filename in filesCSVSachinRavi:
         print('Writing photos....')
         for c in tqdm(images.keys()):  # Iterate over all the classes
             lst_files = []
-            for file in glob.glob(pathImageNet + "/*"+c+"*"):
+            for file in glob.glob(pathImageNet + '/' + c + "/*"+c+"*"):
                 lst_files.append(file)
             # TODO: Sort by name of by index number of the image???
             # I sort by the number of the image
@@ -62,7 +62,12 @@ for filename in filesCSVSachinRavi:
                 #im = cv2.imread(os.path.join(pathImageNet,lst_files[selected_images[i]]))
                 #im_resized = cv2.resize(im, (84, 84), interpolation=cv2.INTER_AREA)
                 #cv2.imwrite(os.path.join(pathImages, images[c][i]),im_resized)
-                copyfile(os.path.join(pathImageNet,lst_files[selected_images[i]]),os.path.join(pathImages, images[c][i]))
+                try:
+                    copyfile(os.path.join(pathImageNet, lst_files[selected_images[i]]),
+                             os.path.join(pathImages, images[c][i]))
+                except:
+                    print('copy error')
+
 
 
 
