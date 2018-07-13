@@ -33,18 +33,19 @@ k_query = options.k_query
 batchsz = options.batchsz
 gpu_id = options.gpu_id
 
-device = 'cuda:{}'.format(gpu_id) if torch.cuda.is_available() and gpu_id > -1 else 'cpu'
+device = 'cuda'.format(gpu_id) if torch.cuda.is_available() and gpu_id > -1 else 'cpu'
 if not os.path.exists('output/ckpt'):
     os.makedirs('output/ckpt')
 
 mdl_file = 'output/ckpt/best_%d_%d.mdl' % (n_way, k_shot)
 
-# net = torch.nn.DataParallel(Compare(n_way, k_shot), device_ids=[0]).cuda()
 net = Compare(n_way, k_shot, gpu_id=gpu_id).to(device)
 # print(net)
 if os.path.exists(mdl_file):
     print('load checkpoint ...', mdl_file)
     net.load_state_dict(torch.load(mdl_file))
+
+net = torch.nn.DataParallel(net, device_ids=[1,2])
 
 model_parameters = filter(lambda p: p.requires_grad, net.parameters())
 params = sum([np.prod(p.size()) for p in model_parameters])
@@ -81,7 +82,7 @@ for epoch in range(1000):
         if step % 15 == 0 and step != 0:
             tb.add_scalar('loss', loss.item())
             print('%d-way %d-shot %d batch> epoch:%d step:%d, loss:%f' %
-                  (n_way, k_shot, batchsz, epoch, step, loss.cpu().data[0]))
+                  (n_way, k_shot, batchsz, epoch, step, loss.item()))
 
         # VALIDATION SET
         total_val_loss = 0
