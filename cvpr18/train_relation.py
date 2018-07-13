@@ -27,7 +27,7 @@ net = Compare(n_way, k_shot, gpu_id=gpu_id).to(device)
 if not os.path.exists('output/ckpt'):
     os.makedirs('output/ckpt')
 
-mdl_file = 'output/ckpt/compare%d%d.mdl' % (n_way, k_shot)
+mdl_file = 'output/ckpt/best_%d_%d.mdl' % (n_way, k_shot)
 if os.path.exists(mdl_file):
     print('load checkpoint ...', mdl_file)
     net.load_state_dict(torch.load(mdl_file))
@@ -71,7 +71,7 @@ for epoch in range(1000):
 
         # VALIDATION SET
         total_val_loss = 0
-        if step % 1 == 0:
+        if step % 200 == 0:
 
             total_correct, total_num, display_onebatch = 0, 0, False
 
