@@ -1,14 +1,16 @@
 # coding=utf-8
-from prototypical_batch_sampler import PrototypicalBatchSampler
-from prototypical_loss import prototypical_loss as loss_fn
-from dataset.omniglot_dataset import OmniglotDataset
-from protonet import ProtoNet
-from parser import get_parser
-
 from tqdm import tqdm
 import numpy as np
 import torch
 import os
+import sys
+
+from prototypical_batch_sampler import PrototypicalBatchSampler
+from prototypical_loss import prototypical_loss as loss_fn
+from protonet import ProtoNet
+from parser import get_parser
+sys.path.append(os.getcwd())
+from dataset.omniglot_dataset import OmniglotDataset
 
 
 def init_seed(opt):
