@@ -1,7 +1,7 @@
 # coding=utf-8
 from prototypical_batch_sampler import PrototypicalBatchSampler
 from prototypical_loss import prototypical_loss as loss_fn
-from omniglot_dataset import OmniglotDataset
+from dataset.omniglot_dataset import OmniglotDataset
 from protonet import ProtoNet
 from parser import get_parser
 
@@ -12,9 +12,6 @@ import os
 
 
 def init_seed(opt):
-    '''
-    Disable cudnn to maximize reproducibility
-    '''
     torch.cuda.cudnn_enabled = False
     np.random.seed(opt.manual_seed)
     torch.manual_seed(opt.manual_seed)
@@ -62,16 +59,10 @@ def init_protonet(opt):
 
 
 def init_optim(opt, model):
-    '''
-    Initialize optimizer
-    '''
     return torch.optim.Adam(params=model.parameters(), lr=opt.learning_rate)
 
 
 def init_lr_scheduler(opt, optim):
-    '''
-    Initialize the learning rate scheduler
-    '''
     return torch.optim.lr_scheduler.StepLR(optimizer=optim,
                                            gamma=opt.lr_scheduler_gamma,
                                            step_size=opt.lr_scheduler_step)

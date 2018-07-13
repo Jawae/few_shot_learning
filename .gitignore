@@ -1,9 +1,11 @@
 # Custom
 *.nfs*
-dataset/
+dataset/omniglot
+dataset/miniImagenet/images*
 output/
 .DS_Store
 .idea
+runs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
