@@ -33,7 +33,7 @@ k_query = options.k_query
 batchsz = options.batchsz
 gpu_id = options.gpu_id
 
-device = 'cuda'.format(gpu_id) if torch.cuda.is_available() and gpu_id > -1 else 'cpu'
+device = 'cuda:{}'.format(gpu_id) if torch.cuda.is_available() and gpu_id > -1 else 'cpu'
 if not os.path.exists('output/ckpt'):
     os.makedirs('output/ckpt')
 
@@ -45,7 +45,7 @@ if os.path.exists(mdl_file):
     print('load checkpoint ...', mdl_file)
     net.load_state_dict(torch.load(mdl_file))
 
-net = torch.nn.DataParallel(net, device_ids=[1,2])
+#net = torch.nn.DataParallel(net, device_ids=[1,2])
 
 model_parameters = filter(lambda p: p.requires_grad, net.parameters())
 params = sum([np.prod(p.size()) for p in model_parameters])
