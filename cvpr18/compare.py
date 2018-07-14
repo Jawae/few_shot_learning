@@ -10,7 +10,7 @@ class Compare(nn.Module):
 	"""
 	repnet => feature concat => layer4 & layer5 & avg pooling => fc => sigmoid
 	"""
-	def __init__(self, n_way, k_shot, gpu_id=0):
+	def __init__(self, n_way, k_shot, gpu_id=0, im_size=224):
 		super(Compare, self).__init__()
 
 		self.n_way = n_way
@@ -18,7 +18,7 @@ class Compare(nn.Module):
 
 		self.repnet = repnet_deep(False)
 		# we need to know the feature dim, so here is a forwarding.
-		repnet_sz = self.repnet(torch.rand(2, 3, 152, 152)).size()
+		repnet_sz = self.repnet(torch.rand(2, 3, im_size, im_size)).size()
 		self.c = repnet_sz[1]
 		self.d = repnet_sz[2]
 		# this is the input channels of layer4&layer5
@@ -36,7 +36,7 @@ class Compare(nn.Module):
 			nn.Linear(64, 1),
 			nn.Sigmoid()
 		)
-		self.device = 'cuda'.format(gpu_id) if torch.cuda.is_available() and gpu_id > -1 else 'cpu'
+		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 	def _make_layer(self, block, planes, blocks, stride=1):
 		"""

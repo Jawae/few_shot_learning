@@ -22,7 +22,8 @@ def get_parser():
     parser.add_argument('-k_shot', type=int, default=1)
     parser.add_argument('-k_query', type=int, default=1)
     parser.add_argument('-batchsz', type=int, default=1)
-    parser.add_argument('-gpu_id', type=int, default=0)
+    parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
+    parser.add_argument('-im_size', type=int, default=224)
     return parser
 
 
@@ -32,20 +33,28 @@ k_shot = options.k_shot
 k_query = options.k_query
 batchsz = options.batchsz
 gpu_id = options.gpu_id
+im_size = options.im_size
 
-device = 'cuda'.format(gpu_id) if torch.cuda.is_available() and gpu_id > -1 else 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+if device == 'cuda':
+    print('gpu mode, gpu id: {}'.format(gpu_id))
+else:
+    print('cpu mode')
+multi_gpu = True if len(gpu_id) > 1 else False
 if not os.path.exists('output/ckpt'):
     os.makedirs('output/ckpt')
 
 mdl_file = 'output/ckpt/best_%d_%d.mdl' % (n_way, k_shot)
 
-net = Compare(n_way, k_shot, gpu_id=gpu_id).to(device)
+net = Compare(n_way, k_shot, gpu_id=gpu_id, im_size=im_size).to(device)
 # print(net)
 if os.path.exists(mdl_file):
     print('load checkpoint ...', mdl_file)
     net.load_state_dict(torch.load(mdl_file))
 
-net = torch.nn.DataParallel(net)
+if multi_gpu and device == 'cuda':
+    print('multi gpu mode ...')
+    net = torch.nn.DataParallel(net)
 
 model_parameters = filter(lambda p: p.requires_grad, net.parameters())
 params = sum([np.prod(p.size()) for p in model_parameters])
@@ -55,10 +64,11 @@ optimizer = optim.Adam(net.parameters(), lr=1e-3)
 tb = SummaryWriter('runs', str(datetime.now()))
 
 mini = miniImagenet('dataset/miniImagenet/', mode='train',
-                    n_way=n_way, k_shot=k_shot, k_query=k_query, batchsz=10000, resize=152)
+                    n_way=n_way, k_shot=k_shot, k_query=k_query, batchsz=10000, resize=im_size)
 db = DataLoader(mini, batchsz, shuffle=True, num_workers=8, pin_memory=True)
+
 mini_val = miniImagenet('dataset/miniImagenet/', mode='val',
-                        n_way=n_way, k_shot=k_shot, k_query=k_query, batchsz=200, resize=152)
+                        n_way=n_way, k_shot=k_shot, k_query=k_query, batchsz=200, resize=im_size)
 db_val = DataLoader(mini_val, batchsz, shuffle=True, num_workers=2, pin_memory=True)
 
 best_accuracy = 0
@@ -71,11 +81,11 @@ for epoch in range(1000):
             support_x.to(device), support_y.to(device), query_x.to(device), query_y.to(device)
 
         net.train()
-        
-       	loss = net(support_x, support_y, query_x, query_y)
-        #print(loss.size())
+
+        loss = net(support_x, support_y, query_x, query_y)
+        # print(loss.size())
         loss = loss.mean()  # Multi-GPU support
-        #print(loss.item())
+        # print(loss.item())
 
         optimizer.zero_grad()
         loss.backward()
@@ -116,7 +126,10 @@ for epoch in range(1000):
             accuracy = total_correct / total_num
             if accuracy > best_accuracy:
                 best_accuracy = accuracy
-                torch.save(net.module.state_dict(), mdl_file)
+                if multi_gpu:
+                    torch.save(net.module.state_dict(), mdl_file)
+                else:
+                    torch.save(net.state_dict(), mdl_file)
                 print('saved to checkpoint:', mdl_file)
 
             tb.add_scalar('accuracy', accuracy)
