@@ -81,7 +81,7 @@ for epoch in range(1000):
         if step % 15 == 0 and step != 0:
             tb.add_scalar('loss', loss.item())
             print('%d-way %d-shot %d batch> epoch:%d step:%d, loss:%f' %
-                  (n_way, k_shot, batchsz, epoch, step, loss.cpu().data[0]))
+                  (n_way, k_shot, batchsz, epoch, step, loss.item()))
 
         # VALIDATION SET
         total_val_loss = 0
