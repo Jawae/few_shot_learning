@@ -18,7 +18,7 @@ class Compare(nn.Module):
 
 		self.repnet = repnet_deep(False)
 		# we need to know the feature dim, so here is a forwarding.
-		repnet_sz = self.repnet(torch.rand(2, 3, 224, 224)).size()
+		repnet_sz = self.repnet(torch.rand(2, 3, 152, 152)).size()
 		self.c = repnet_sz[1]
 		self.d = repnet_sz[2]
 		# this is the input channels of layer4&layer5
@@ -36,7 +36,7 @@ class Compare(nn.Module):
 			nn.Linear(64, 1),
 			nn.Sigmoid()
 		)
-		self.device = 'cuda:{}'.format(gpu_id) if torch.cuda.is_available() and gpu_id > -1 else 'cpu'
+		self.device = 'cuda'.format(gpu_id) if torch.cuda.is_available() and gpu_id > -1 else 'cpu'
 
 	def _make_layer(self, block, planes, blocks, stride=1):
 		"""
@@ -109,6 +109,9 @@ class Compare(nn.Module):
 		# label: [b, querysz, setsz]
 		if train:
 			loss = torch.pow(label - score, 2).sum() / batchsz
+			loss = loss.unsqueeze(0)
+			#print(loss.size())
+			#print(loss.item())
 			return loss
 
 		else:
@@ -127,6 +130,8 @@ class Compare(nn.Module):
 					pred.append(support_y_np[i, idx * self.k_shot])
 			# pred: [b, querysz]
 			pred = torch.from_numpy(np.array(pred).reshape((batchsz, querysz))).to(self.device)
-
 			correct = torch.eq(pred, query_y).sum()
+			correct = correct.unsqueeze(0)
+			#print('pred size {}'.format(pred.size()))
+			#print('correct size {}'.format(correct.size()))
 			return pred, correct
