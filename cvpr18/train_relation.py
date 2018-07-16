@@ -71,6 +71,7 @@ mini_val = miniImagenet('dataset/miniImagenet/', mode='val',
                         n_way=n_way, k_shot=k_shot, k_query=k_query, batchsz=200, resize=im_size)
 db_val = DataLoader(mini_val, batchsz, shuffle=True, num_workers=2, pin_memory=True)
 
+# fixme: adjust the learning rate
 best_accuracy = 0
 for epoch in range(1000):
 

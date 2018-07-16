@@ -132,6 +132,6 @@ class Compare(nn.Module):
 			pred = torch.from_numpy(np.array(pred).reshape((batchsz, querysz))).to(self.device)
 			correct = torch.eq(pred, query_y).sum()
 			correct = correct.unsqueeze(0)
-			#print('pred size {}'.format(pred.size()))
-			#print('correct size {}'.format(correct.size()))
+			# print('pred size {}'.format(pred.size()))
+			# print('correct size {}'.format(correct.size()))
 			return pred, correct
