@@ -24,14 +24,14 @@ class Omniglot(data.Dataset):
         decompress = False
         if not os.path.exists(self.root):
             os.makedirs(self.root)
-        if not os.path.exists(os.path.join(self.root, 'omniglot')):
-            os.makedirs(os.path.join(self.root, 'omniglot'))
+        # if not os.path.exists(os.path.join(self.root, 'omniglot')):
+        #     os.makedirs(os.path.join(self.root, 'omniglot'))
+        #     decompress = True
+        if not os.path.exists(os.path.join(self.root, 'train')):
+            os.makedirs(os.path.join(self.root, 'train'))
             decompress = True
-        if not os.path.exists(os.path.join(self.root, 'omniglot', 'train')):
-            os.makedirs(os.path.join(self.root, 'omniglot', 'train'))
-            decompress = True
-        if not os.path.exists(os.path.join(self.root, 'omniglot', 'test')):
-            os.makedirs(os.path.join(self.root, 'omniglot', 'test'))
+        if not os.path.exists(os.path.join(self.root, 'test')):
+            os.makedirs(os.path.join(self.root, 'test'))
             decompress = True
         if not os.path.exists(os.path.join(self.root, 'compacted_datasets')):
             os.makedirs(os.path.join(self.root, 'compacted_datasets'))
@@ -39,17 +39,17 @@ class Omniglot(data.Dataset):
         return decompress
 
     def _check_decompress(self):
-        return os.listdir('%s/omniglot/test' % self.root) == []
+        return os.listdir('%s/test' % self.root) == []
 
     def _decompress_(self):
         print("\nDecompressing Images...")
         comp_files = ['%s/raw/images_background.zip' % self.root,
-                      '%s/compressed/omniglot/images_evaluation.zip' % self.root]
+                      '%s/raw/images_evaluation.zip' % self.root]
         if os.path.isfile(comp_files[0]) and os.path.isfile(comp_files[1]):
             os.system(('unzip %s -d ' % comp_files[0]) +
-                      os.path.join(self.root, 'omniglot', 'train'))
+                      os.path.join(self.root, 'train'))
             os.system(('unzip %s -d ' % comp_files[1]) +
-                      os.path.join(self.root, 'omniglot', 'test'))
+                      os.path.join(self.root, 'test'))
         else:
             raise Exception('Missing %s or %s' % (comp_files[0], comp_files[1]))
         print("Decompressed")
@@ -60,8 +60,10 @@ class Omniglot(data.Dataset):
 
     def _preprocess_(self):
         print('\nPreprocessing Omniglot images...')
-        (class_names_train, images_path_train) = parser.get_image_paths(os.path.join(self.root, 'omniglot', 'train'))
-        (class_names_test, images_path_test) = parser.get_image_paths(os.path.join(self.root, 'omniglot', 'test'))
+        (class_names_train, images_path_train) = \
+            parser.get_image_paths(os.path.join(self.root, 'train'))
+        (class_names_test, images_path_test) = \
+            parser.get_image_paths(os.path.join(self.root, 'test', 'images_evaluation'))
 
         keys_all = sorted(list(set(class_names_train + class_names_test)))
         label_encoder = {}
@@ -123,6 +125,7 @@ class Omniglot(data.Dataset):
 
         data_rot = {}
         # resize images and normalize
+        # fixme: super tedious and slow
         for class_ in data:
             for rot in range(4):
                 data_rot[class_ * 4 + rot] = []
