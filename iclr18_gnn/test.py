@@ -25,7 +25,8 @@ def test_one_shot(args, model, test_samples=5000, partition='test', device='cuda
     for i in range(iterations):
 
         data = loader.get_task_batch(batch_size=args.batch_size_test, n_way=args.test_N_way,
-                                     num_shots=args.test_N_shots, unlabeled_extra=args.unlabeled_extra)
+                                     num_shots=args.test_N_shots, unlabeled_extra=args.unlabeled_extra,
+                                     device=device)
         [x, labels_x_cpu, _, _, xi_s, labels_yi_cpu, oracles_yi, hidden_labels] = data
 
         # if args.cuda:

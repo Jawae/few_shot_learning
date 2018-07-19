@@ -11,7 +11,7 @@ from . import parser
 
 class Omniglot(data.Dataset):
     def __init__(self, root, dataset='omniglot'):
-        self.root = root
+        self.root = os.path.join(root, 'omniglot')
         self.seed = 10
         self.dataset = dataset
         if not self._check_exists_():
@@ -43,7 +43,7 @@ class Omniglot(data.Dataset):
 
     def _decompress_(self):
         print("\nDecompressing Images...")
-        comp_files = ['%s/compressed/omniglot/images_background.zip' % self.root,
+        comp_files = ['%s/raw/images_background.zip' % self.root,
                       '%s/compressed/omniglot/images_evaluation.zip' % self.root]
         if os.path.isfile(comp_files[0]) and os.path.isfile(comp_files[1]):
             os.system(('unzip %s -d ' % comp_files[0]) +
