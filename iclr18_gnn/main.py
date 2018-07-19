@@ -94,6 +94,7 @@ io.cprint(str(args))
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 torch.manual_seed(args.seed)
 if args.cuda:
+    # note: always start from index 0
     io.cprint('Using GPU : ' + str(torch.cuda.current_device())+' from '+str(torch.cuda.device_count())+' devices')
     torch.cuda.manual_seed(args.seed)
 else:
@@ -177,7 +178,7 @@ def train():
         # TODO surprisingly the repo here do not have a dataloader
         data = train_loader.get_task_batch(batch_size=args.batch_size, n_way=args.train_N_way,
                                            unlabeled_extra=args.unlabeled_extra, num_shots=args.train_N_shots,
-                                           cuda=args.cuda, variable=True)
+                                           cuda=args.cuda, variable=True, device=device)
         [batch_x, label_x, _, _, batches_xi, labels_yi, oracles_yi, hidden_labels] = data
 
         opt_enc_nn.zero_grad()
