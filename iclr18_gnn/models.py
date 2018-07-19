@@ -2,7 +2,7 @@ from gnn_iclr import *
 
 
 class EmbeddingOmniglot(nn.Module):
-    ''' In this network the input image is supposed to be 28x28 '''
+    """In this network the input image is supposed to be 28x28"""
 
     def __init__(self, args, emb_size):
         super(EmbeddingOmniglot, self).__init__()
@@ -46,7 +46,7 @@ class EmbeddingOmniglot(nn.Module):
 
 
 class EmbeddingImagenet(nn.Module):
-    ''' In this network the input image is supposed to be 28x28 '''
+    """In this network the input image is supposed to be 28x28"""
 
     def __init__(self, args, emb_size):
         super(EmbeddingImagenet, self).__init__()
@@ -156,7 +156,7 @@ class MetricNN(nn.Module):
         return outputs, logits
 
     def forward(self, inputs):
-        '''input: [batch_x, [batches_xi], [labels_yi]]'''
+        """input: [batch_x, [batches_xi], [labels_yi]]"""
         [z, zi_s, labels_yi, oracles_yi, hidden_labels] = inputs
 
         if 'gnn_iclr_active' in self.metric_network:
@@ -175,12 +175,12 @@ class SoftmaxModule:
         if self.softmax_metric == 'log_softmax':
             return F.log_softmax(outputs)
         else:
-            raise(NotImplementedError)
+            raise NotImplementedError
 
 
 def load_model(model_name, args, io):
     try:
-        model = torch.load('checkpoints/%s/models/%s.t7' % (args.exp_name, model_name))
+        model = torch.load('output/%s/models/%s.t7' % (args.exp_name, model_name))
         io.cprint('Loading Parameters from the last trained %s Model' % model_name)
         return model
     except:
@@ -190,7 +190,7 @@ def load_model(model_name, args, io):
 
 
 def create_models(args):
-    print (args.dataset)
+    print(args.dataset)
 
     if 'omniglot' == args.dataset:
         enc_nn = EmbeddingOmniglot(args, 64)

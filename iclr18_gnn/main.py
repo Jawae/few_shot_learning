@@ -2,17 +2,19 @@ from __future__ import print_function
 import os
 import argparse
 import numpy as np
+import sys
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
 
-from dataset.gnn_specific import generator
 from io_utils import IOStream
 import models
 import test
 
+sys.path.append(os.getcwd())
+from dataset.gnn_specific import generator
 
 # Training settings
 parser = argparse.ArgumentParser(description='Few-Shot Learning with Graph Neural Networks')
@@ -34,8 +36,6 @@ parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
 parser.add_argument('--dec_lr', type=int, default=10000, metavar='N',
                     help='Decreasing the learning rate every x iterations')
 
-parser.add_argument('--no-cuda', action='store_true', default=False,
-                    help='enables CUDA training')
 parser.add_argument('--seed', type=int, default=1, metavar='S',
                     help='random seed (default: 1)')
 parser.add_argument('--log-interval', type=int, default=20, metavar='N',
@@ -67,6 +67,10 @@ parser.add_argument('--test_samples', type=int, default=30000, metavar='N',
 parser.add_argument('--dataset', type=str, default='mini_imagenet', metavar='N',
                     help='omniglot')
 
+parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
+parser.add_argument('--no-cuda', action='store_true', default=False,
+                    help='enables CUDA training')  # fixme
+
 args = parser.parse_args()
 
 
@@ -94,6 +98,8 @@ if args.cuda:
     torch.cuda.manual_seed(args.seed)
 else:
     io.cprint('Using CPU')
+
+device = 'cuda' if args.cuda and sum(args.gpu_id) > -1 else 'cpu'
 
 
 def adjust_learning_rate(optimizers, lr, iteration):
@@ -133,7 +139,7 @@ def train():
     train_loader = generator.Generator(args.dataset_root, args, partition='train', dataset=args.dataset)
     io.cprint('Batch size: '+str(args.batch_size))
 
-    # Try to load models
+    # Try to load models (resume)
     enc_nn = models.load_model('enc_nn', args, io)
     metric_nn = models.load_model('metric_nn', args, io)
 
@@ -141,10 +147,10 @@ def train():
         enc_nn, metric_nn = models.create_models(args=args)
     softmax_module = models.SoftmaxModule()
 
-    if args.cuda:
-        enc_nn.cuda()
-        metric_nn.cuda()
+    enc_nn.to(device)
+    metric_nn.to(device)
 
+    # print the network
     io.cprint(str(enc_nn))
     io.cprint(str(metric_nn))
 
@@ -157,15 +163,18 @@ def train():
 
     enc_nn.train()
     metric_nn.train()
+
     counter = 0
     total_loss = 0
     val_acc, val_acc_aux = 0, 0
     test_acc = 0
+
     for batch_idx in range(args.iterations):
 
         ####################
         # Train
         ####################
+        # TODO surprisingly the repo here do not have a dataloader
         data = train_loader.get_task_batch(batch_size=args.batch_size, n_way=args.train_N_way,
                                            unlabeled_extra=args.unlabeled_extra, num_shots=args.train_N_shots,
                                            cuda=args.cuda, variable=True)
@@ -180,19 +189,19 @@ def train():
         opt_enc_nn.step()
         opt_metric_nn.step()
 
-        adjust_learning_rate(optimizers=[opt_enc_nn, opt_metric_nn], lr=args.lr, iter=batch_idx)
+        adjust_learning_rate(optimizers=[opt_enc_nn, opt_metric_nn], lr=args.lr, iteration=batch_idx)
 
         ####################
         # Display
         ####################
         counter += 1
-        total_loss += loss_d_metric.data[0]
+        total_loss += loss_d_metric.item()
         if batch_idx % args.log_interval == 0:
-                display_str = 'Train Iter: {}'.format(batch_idx)
-                display_str += '\tLoss_d_metric: {:.6f}'.format(total_loss/counter)
-                io.cprint(display_str)
-                counter = 0
-                total_loss = 0
+            display_str = 'Train Iter: {}'.format(batch_idx)
+            display_str += '\tLoss_d_metric: {:.6f}'.format(total_loss/counter)
+            io.cprint(display_str)
+            counter = 0
+            total_loss = 0
 
         ####################
         # Test
@@ -204,11 +213,14 @@ def train():
                 test_samples = 3000
             if args.dataset == 'mini_imagenet':
                 val_acc_aux = test.test_one_shot(args, model=[enc_nn, metric_nn, softmax_module],
-                                                 test_samples=test_samples*5, partition='val')
+                                                 test_samples=test_samples*5, partition='val',
+                                                 device=device)
+
             test_acc_aux = test.test_one_shot(args, model=[enc_nn, metric_nn, softmax_module],
-                                              test_samples=test_samples*5, partition='test')
+                                              test_samples=test_samples*5, partition='test',
+                                              device=device)
             test.test_one_shot(args, model=[enc_nn, metric_nn, softmax_module],
-                               test_samples=test_samples, partition='train')
+                               test_samples=test_samples, partition='train', device=device)
             enc_nn.train()
             metric_nn.train()
 
@@ -223,12 +235,11 @@ def train():
         # Save model
         ####################
         if (batch_idx + 1) % args.save_interval == 0:
-            torch.save(enc_nn, 'checkpoints/%s/models/enc_nn.t7' % args.exp_name)
-            torch.save(metric_nn, 'checkpoints/%s/models/metric_nn.t7' % args.exp_name)
+            torch.save(enc_nn, 'output/%s/models/enc_nn.t7' % args.exp_name)
+            torch.save(metric_nn, 'output/%s/models/metric_nn.t7' % args.exp_name)
 
     # Test after training
-    test.test_one_shot(args, model=[enc_nn, metric_nn, softmax_module],
-                       test_samples=args.test_samples)
+    test.test_one_shot(args, model=[enc_nn, metric_nn, softmax_module], test_samples=args.test_samples)
 
 
 if __name__ == "__main__":

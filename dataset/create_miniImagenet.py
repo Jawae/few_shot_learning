@@ -21,7 +21,7 @@ from shutil import copyfile
 import cv2
 from tqdm import tqdm
 
-pathImageNet = '/home/hongyang/dataset/imagenet_cls/cls/train'
+pathImageNet = '/home/hongyang/dataset/imagenet_cls/cls/train'   # on lab pc @CUHK
 pathminiImageNet = 'dataset/miniImagenet/'
 pathImages = os.path.join(pathminiImageNet, 'images/')
 filesCSVSachinRavi = [os.path.join(pathminiImageNet, 'train.csv'),

@@ -102,7 +102,7 @@ class Wcompute(nn.Module):
         W_new = F.leaky_relu(W_new)
 
         W_new = self.conv2d_last(W_new)
-        W_new = torch.transpose(W_new, 1, 3) #size: bs x N x N x 1
+        W_new = torch.transpose(W_new, 1, 3)  # size: bs x N x N x 1
 
         if self.activation == 'softmax':
             W_new = W_new - W_id.expand_as(W_new) * 1e8

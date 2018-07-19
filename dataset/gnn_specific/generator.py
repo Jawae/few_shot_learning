@@ -14,8 +14,7 @@ class Generator(data.Dataset):
         self.partition = partition  # training set or test set
         self.args = args
 
-        assert (dataset == 'omniglot' or
-                dataset == 'mini_imagenet'), 'Incorrect dataset name'
+        assert (dataset == 'omniglot' or dataset == 'mini_imagenet'), 'Incorrect dataset name'
         self.dataset = dataset
 
         if self.dataset == 'omniglot':
@@ -28,9 +27,12 @@ class Generator(data.Dataset):
         if dataset == 'omniglot':
             self.loader = omniglot.Omniglot(self.root, dataset=dataset)
             self.data = self.loader.load_dataset(self.partition == 'train', self.size)
+
         elif dataset == 'mini_imagenet':
             self.loader = mini_imagenet.MiniImagenet(self.root)
-            self.data, self.label_encoder = self.loader.load_dataset(self.partition, self.size)
+            # hyli: self.label_encoder used or not?
+            # self.data, self.label_encoder = self.loader.load_dataset(self.partition, self.size)
+            self.data, _ = self.loader.load_dataset(self.partition, self.size)
         else:
             raise NotImplementedError
 
@@ -44,7 +46,8 @@ class Generator(data.Dataset):
     #         rotated_image[channel, :, :] = np.rot90(image[channel, :, :], k=times)
     #     return rotated_image
 
-    def get_task_batch(self, batch_size=5, n_way=20, num_shots=1, unlabeled_extra=0, cuda=False, variable=False):
+    def get_task_batch(self, batch_size=5, n_way=20, num_shots=1, unlabeled_extra=0,
+                       device='cpu', cuda=False, variable=False):
         # Init variables
         batch_x = np.zeros((batch_size, self.input_channels, self.size[0], self.size[1]), dtype='float32')
         labels_x = np.zeros((batch_size, n_way), dtype='float32')
@@ -102,25 +105,31 @@ class Generator(data.Dataset):
         return_arr = [torch.from_numpy(batch_x), torch.from_numpy(labels_x), torch.from_numpy(labels_x_scalar),
                       torch.from_numpy(labels_x_global), batches_xi, labels_yi, oracles_yi,
                       torch.from_numpy(hidden_labels)]
-        if cuda:
-            return_arr = self.cast_cuda(return_arr)
-        if variable:
-            return_arr = self.cast_variable(return_arr)
+        # if cuda:
+        #     return_arr = self.cast_cuda(return_arr)
+        # if variable:
+        #     return_arr = self.cast_variable(return_arr)
+        for i, tensor in enumerate(return_arr):
+            if isinstance(tensor, list):
+                for j, sub_tensor in enumerate(tensor):
+                    return_arr[i][j] = sub_tensor.to(device)
+            else:
+                return_arr[i] = tensor.to(device)
+
         return return_arr
 
-    def cast_cuda(self, input):
-        if type(input) == type([]):
-            for i in range(len(input)):
-                input[i] = self.cast_cuda(input[i])
-        else:
-            return input.cuda()
-        return input
-
-    def cast_variable(self, input):
-        if type(input) == type([]):
-            for i in range(len(input)):
-                input[i] = self.cast_variable(input[i])
-        else:
-            return Variable(input)
-
-        return input
+    # def cast_cuda(self, input):
+    #     if type(input) == type([]):
+    #         for i in range(len(input)):
+    #             input[i] = self.cast_cuda(input[i])
+    #     else:
+    #         return input.cuda()
+    #     return input
+    #
+    # def cast_variable(self, input):
+    #     if type(input) == type([]):
+    #         for i in range(len(input)):
+    #             input[i] = self.cast_variable(input[i])
+    #     else:
+    #         return Variable(input)
+    #     return input

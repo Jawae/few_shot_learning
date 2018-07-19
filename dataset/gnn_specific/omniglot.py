@@ -16,7 +16,7 @@ class Omniglot(data.Dataset):
         self.dataset = dataset
         if not self._check_exists_():
             self._init_folders_()
-            if self.check_decompress():
+            if self._check_decompress():
                 self._decompress_()
             self._preprocess_()
 
@@ -38,7 +38,7 @@ class Omniglot(data.Dataset):
             decompress = True
         return decompress
 
-    def check_decompress(self):
+    def _check_decompress(self):
         return os.listdir('%s/omniglot/test' % self.root) == []
 
     def _decompress_(self):
