@@ -64,8 +64,8 @@ parser.add_argument('--dataset_root', type=str, default='dataset', metavar='N',
                     help='Root dataset')
 parser.add_argument('--test_samples', type=int, default=30000, metavar='N',
                     help='Number of shots')
-parser.add_argument('--dataset', type=str, default='mini_imagenet', metavar='N',
-                    help='omniglot')
+parser.add_argument('--dataset', type=str, default='omniglot', metavar='N',
+                    help='omniglot | mini_imagenet')
 
 parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
 parser.add_argument('--no-cuda', action='store_true', default=False,
