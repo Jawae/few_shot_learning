@@ -115,6 +115,8 @@ def train_batch(model, data):
     [batch_x, label_x, batches_xi, labels_yi, oracles_yi, hidden_labels] = data
 
     # Compute embedding from x and xi_s
+    # print(batch_x.is_cuda)
+    # print(enc_nn.fc1.weight.is_cuda)
     z = enc_nn(batch_x)[-1]
     zi_s = [enc_nn(batch_xi)[-1] for batch_xi in batches_xi]
 
