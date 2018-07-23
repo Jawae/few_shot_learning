@@ -43,5 +43,5 @@ if __name__ == "__main__":
         download_file_from_google_drive(file_id, destination)
 
 #
-# python src/utils/download_gdrive.py 16V_ZlkW4SsnNDtnGmaBRq2OoPmUOc5mY mini-imagenet.tar.gz
-# python src/utils/download_gdrive.py 1hqVbS2nhHXa51R9_aB6QDXeC0P2LQG_u tier-imagenet.tar
+# python nips17_proto/utils/download_gdrive.py 16V_ZlkW4SsnNDtnGmaBRq2OoPmUOc5mY mini-imagenet.tar.gz
+# python nips17_proto/utils/download_gdrive.py 1hqVbS2nhHXa51R9_aB6QDXeC0P2LQG_u tier-imagenet.tar
