@@ -25,7 +25,7 @@ class EmbeddingOmniglot(nn.Module):
         self.bn4 = nn.BatchNorm2d(self.nef)
         # state size. (2*ndf) x 3 x 3
         self.fc_last = nn.Linear(3 * 3 * self.nef, self.emb_size, bias=False)
-        self.bn_last = nn.BatchNorm2d(self.emb_size)
+        self.bn_last = nn.BatchNorm1d(self.emb_size)   # TODO: changed to 1d
 
     def forward(self, inputs):
         e1 = F.max_pool2d(self.bn1(self.conv1(inputs)), 2)
@@ -39,8 +39,10 @@ class EmbeddingOmniglot(nn.Module):
         e4 = self.bn4(self.conv4(x))
         x = F.leaky_relu(e4, 0.1, inplace=True)
         x = x.view(-1, 3 * 3 * self.nef)
-
-        output = F.leaky_relu(self.bn_last(self.fc_last(x)))
+        # print(x.size())
+        _temp = self.fc_last(x)
+        # print(_temp.size())
+        output = F.leaky_relu(self.bn_last(_temp))
 
         return [e1, e2, e3, output]
 
