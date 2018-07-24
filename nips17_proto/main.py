@@ -8,7 +8,7 @@ import sys
 from prototypical_batch_sampler import PrototypicalBatchSampler
 from prototypical_loss import prototypical_loss as loss_fn
 from protonet import ProtoNet
-from parser import get_parser
+from option import get_parser
 sys.path.append(os.getcwd())
 from dataset.omniglot_dataset import OmniglotDataset
 

@@ -1,6 +1,5 @@
 import torch
 from torch import nn
-from torch.autograd import Variable
 from torch.nn import functional as F
 import numpy as np
 from repnet import repnet_deep, Bottleneck

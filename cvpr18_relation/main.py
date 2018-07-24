@@ -14,20 +14,24 @@ import sys
 sys.path.append(os.getcwd())
 # print(sys.path)
 from dataset.miniImagenet import miniImagenet
+from basic_opt import *
 
 
 def get_parser():
     parser = argparse.ArgumentParser()
+
     parser.add_argument('-n_way', type=int, default=5)
     parser.add_argument('-k_shot', type=int, default=1)
     parser.add_argument('-k_query', type=int, default=1)
-    parser.add_argument('-batchsz', type=int, default=1)
-    parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
     parser.add_argument('-im_size', type=int, default=224)
     return parser
 
 
-options = get_parser().parse_args()
+_opts = get_parser().parse_args()
+_basic_opts = get_basic_parser().parse_args()
+options = merge_and_setup(_opts, _basic_opts)
+
+
 n_way = options.n_way
 k_shot = options.k_shot
 k_query = options.k_query

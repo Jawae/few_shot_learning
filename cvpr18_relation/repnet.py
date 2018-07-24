@@ -147,6 +147,8 @@ def repnet_deep(pretrained=False, **kwargs):
 	}
 
 	model = ResNet(Bottleneck, [3, 4, 6], **kwargs)
+	which_model = kwargs['which_model']
+	assert which_model in model_urls.keys()
 	if pretrained:
-		model.load_state_dict(model_zoo.load_url(model_urls['resnet18']), strict=False)
+		model.load_state_dict(model_zoo.load_url(model_urls[which_model]), strict=False)
 	return model
