@@ -143,7 +143,8 @@ def repnet_deep(pretrained=False, **kwargs):
 		'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
 	}
 	# TODO: for now only supports resnet18
-	model = ResNet(Bottleneck, [3, 4, 6], **kwargs)
+	if kwargs['structure'] == 'resnet18':
+		model = ResNet(Bottleneck, [3, 4, 6])
 	if pretrained:
-		model.load_state_dict(model_zoo.load_url(model_urls['resnet18']), strict=False)
+		model.load_state_dict(model_zoo.load_url(model_urls[kwargs['structure']]), strict=False)
 	return model

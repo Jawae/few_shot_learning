@@ -5,6 +5,7 @@ from torchvision.transforms import transforms as T
 import numpy as np
 from PIL import Image
 import csv
+from utils.utils import print_log
 
 
 class miniImagenet(Dataset):
@@ -22,7 +23,7 @@ class miniImagenet(Dataset):
     sets: contains n_way * k_shot for meta-train set, n_way * n_query for meta-test set.
 """
 
-	def __init__(self, root, mode, batchsz, n_way, k_shot, k_query, resize, startidx=0):
+	def __init__(self, root, mode, batchsz, n_way, k_shot, k_query, resize, startidx=0, log_file=None):
 		"""
 		:param root: root path of mini-imagenet
 		:param mode: train, val or test
@@ -43,7 +44,8 @@ class miniImagenet(Dataset):
 		self.resize = resize
 		self.startidx = startidx
 
-		print('\t\t%s, b:%d, %d-way, %d-shot, %d-query, resize:%d' % (mode, batchsz, n_way, k_shot, k_query, resize))
+		print_log('\t\t%s, b:%d, %d-way, %d-shot, %d-query, resize:%d' %
+				  (mode, batchsz, n_way, k_shot, k_query, resize), log_file)
 
 		# if mode == 'train':
 		# 	self.transform = transforms.Compose([lambda x: Image.open(x).convert('RGB'),
