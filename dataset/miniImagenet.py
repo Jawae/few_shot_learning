@@ -1,7 +1,7 @@
 import os
 import torch
 from torch.utils.data import Dataset
-from torchvision.transforms import transforms
+from torchvision.transforms import transforms as T
 import numpy as np
 from PIL import Image
 import csv
@@ -9,38 +9,41 @@ import csv
 
 class miniImagenet(Dataset):
 	"""
-	put mini-imagenet files as :
+	put mini-imagenet files as:
         root :
-        |- images/*.jpg includes all imgeas
+        |- images/*.jpg includes all images
         |- train.csv
         |- test.csv
         |- val.csv
-    NOTICE: meta-learning is different from general supervised learning, especially the concept of batch and set.
+
+    NOTICE:
+    meta-learning is different from general supervised learning, especially the concept of batch and set.
     batch: contains several sets
-    sets: conains n_way * k_shot for meta-train set, n_way * n_query for meta-test set.
+    sets: contains n_way * k_shot for meta-train set, n_way * n_query for meta-test set.
 """
 
 	def __init__(self, root, mode, batchsz, n_way, k_shot, k_query, resize, startidx=0):
 		"""
 		:param root: root path of mini-imagenet
 		:param mode: train, val or test
-		:param batchsz: batch size of sets, not batch of imgs
+		:param batchsz: batch size of sets, not batch of images
 		:param n_way:
 		:param k_shot:
-		:param k_query: num of qeruy imgs per class
-		:param resize: resize to
+		:param k_query: num of query images per class
+		:param resize:
 		:param startidx: start to index label from startidx
 		"""
 
-		self.batchsz = batchsz  # batch of set, not batch of imgs
-		self.n_way = n_way  # n-way
-		self.k_shot = k_shot  # k-shot
-		self.k_query = k_query  # for evaluation
+		self.batchsz = batchsz
+		self.n_way = n_way
+		self.k_shot = k_shot
+		self.k_query = k_query
 		self.setsz = self.n_way * self.k_shot  # num of samples per set
 		self.querysz = self.n_way * self.k_query  # number of samples per set for evaluation
-		self.resize = resize  # resize to
-		self.startidx = startidx  # index label not from 0, but from startidx
-		print('%s, b:%d, %d-way, %d-shot, %d-query, resize:%d' % (mode, batchsz, n_way, k_shot, k_query, resize))
+		self.resize = resize
+		self.startidx = startidx
+
+		print('\t\t%s, b:%d, %d-way, %d-shot, %d-query, resize:%d' % (mode, batchsz, n_way, k_shot, k_query, resize))
 
 		# if mode == 'train':
 		# 	self.transform = transforms.Compose([lambda x: Image.open(x).convert('RGB'),
@@ -53,25 +56,29 @@ class miniImagenet(Dataset):
 		# 	                                     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 		# 	                                     ])
 		# else:
-		self.transform = transforms.Compose([
-            lambda x: Image.open(x).convert('RGB'),
-            transforms.Resize((self.resize, self.resize)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
-        ])
+		self.transform = T.Compose([
+			lambda x: Image.open(x).convert('RGB'),
+			T.Resize((self.resize, self.resize)),
+			T.ToTensor(),
+			T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+		])
 
-		self.path = os.path.join(root, 'images')  # image path
-		csvdata = self.loadCSV(os.path.join(root, mode + '.csv'))  # csv path
+		self.path = os.path.join(root, 'images')
+		csvdata = self._loadCSV(os.path.join(root, mode + '.csv'))
 		self.data = []
 		self.img2label = {}
 		for i, (k, v) in enumerate(csvdata.items()):
-			self.data.append(v)  # [[img1, img2, ...], [img111, ...]]
-			self.img2label[k] = i + self.startidx  # {"img_name[:9]":label}
+			self.data.append(v)  					# [[img1, img2, ...], [img111, img222, ...]]
+			self.img2label[k] = i + self.startidx  	# {"img_name[:9]": label}
+
 		self.cls_num = len(self.data)
 
-		self.create_batch(self.batchsz)
+		self.support_x_batch = []  	# support set batch
+		self.query_x_batch = []  	# query set batch
+		self._create_batch(self.batchsz)
 
-	def loadCSV(self, csvf):
+	@staticmethod
+	def _loadCSV(csvf):
 		"""
 		return a dict saving the information of csv
 		:param splitFile: csv file name
@@ -91,27 +98,26 @@ class miniImagenet(Dataset):
 					dictLabels[label] = [filename]
 		return dictLabels
 
-	def create_batch(self, batchsz):
+	def _create_batch(self, batchsz):
 		"""
 		create batch for meta-learning.
-		×episode× here means batch, and it means how many sets we want to retain.
-		:param episodes: batch size
-		:return:
+		*episode* here means batch, and it means how many sets we want to retain.
 		"""
-		self.support_x_batch = []  # support set batch
-		self.query_x_batch = []  # query set batch
-		for b in range(batchsz):  # for each batch
-			# 1.select n_way classes randomly
+		episode = batchsz
+		for b in range(episode):  	# for each batch
+
+			# 1. select n_way classes randomly
 			selected_cls = np.random.choice(self.cls_num, self.n_way, False)  # no duplicate
 			support_x = []
 			query_x = []
 			for cls in selected_cls:
+
 				# 2. select k_shot + k_query for each class
 				selected_imgs_idx = np.random.choice(len(self.data[cls]), self.k_shot + self.k_query, False)
-				indexDtrain = np.array(selected_imgs_idx[:self.k_shot])  # idx for Dtrain
-				indexDtest = np.array(selected_imgs_idx[self.k_shot:])  # idx for Dtest
-				support_x.append(
-					np.array(self.data[cls])[indexDtrain].tolist())  # get all images filename for current Dtrain
+				indexDtrain = np.array(selected_imgs_idx[:self.k_shot])  	# idx for Dtrain
+				indexDtest = np.array(selected_imgs_idx[self.k_shot:])  	# idx for Dtest
+				# get all images filename for current Dtrain
+				support_x.append(np.array(self.data[cls])[indexDtrain].tolist())
 				query_x.append(np.array(self.data[cls])[indexDtest].tolist())
 
 			self.support_x_batch.append(support_x)  # append set to current sets
@@ -120,36 +126,29 @@ class miniImagenet(Dataset):
 	def __getitem__(self, index):
 		"""
 		index means index of sets, 0<= index <= batchsz-1
-		:param index:
-		:return:
 		"""
-		# [setsz, 3, resize, resize]
 		support_x = torch.FloatTensor(self.setsz, 3, self.resize, self.resize)
-		# [setsz]
-		support_y = np.zeros((self.setsz), dtype=np.int)
-		# [querysz, 3, resize, resize]
 		query_x = torch.FloatTensor(self.querysz, 3, self.resize, self.resize)
-		# [querysz]
-		query_y = np.zeros((self.querysz), dtype=np.int)
 
-		flatten_support_x = [os.path.join(self.path, item)
-		                     for sublist in self.support_x_batch[index] for item in sublist]
-		support_y = np.array(
-			[self.img2label[item[:9]]  # filename:n0153282900000005.jpg, the first 9 characters treated as label
-			 for sublist in self.support_x_batch[index] for item in sublist])
-		flatten_query_x = [os.path.join(self.path, item)
-		                   for sublist in self.query_x_batch[index] for item in sublist]
-		query_y = np.array([self.img2label[item[:9]]
-		                    for sublist in self.query_x_batch[index] for item in sublist])
+		flatten_support_x_path = \
+			[os.path.join(self.path, item) for cls in self.support_x_batch[index] for item in cls]
+		support_y = np.array([
+			self.img2label[item[:9]]  	# filename:n0153282900000005.jpg, the first 9 characters treated as label
+			for cls in self.support_x_batch[index] for item in cls
+		])
+		flatten_query_x_path = [os.path.join(self.path, item) for sublist in self.query_x_batch[index] for item in sublist]
+		query_y = np.array([
+			self.img2label[item[:9]] for sublist in self.query_x_batch[index] for item in sublist
+		])
 
-		for i, path in enumerate(flatten_support_x):
+		for i, path in enumerate(flatten_support_x_path):
 			support_x[i] = self.transform(path)
 
-		for i, path in enumerate(flatten_query_x):
+		for i, path in enumerate(flatten_query_x_path):
 			query_x[i] = self.transform(path)
-		# print(support_set_y)
+
 		return support_x, torch.LongTensor(torch.from_numpy(support_y)), \
-		       query_x, torch.LongTensor(torch.from_numpy(query_y))
+			   query_x, torch.LongTensor(torch.from_numpy(query_y))
 
 	def __len__(self):
 		# as we have built up to batchsz of sets, you can sample some small batch size of sets.
