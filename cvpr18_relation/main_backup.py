@@ -17,19 +17,21 @@ from dataset.miniImagenet import miniImagenet
 from basic_opt import *
 
 
-
 def get_parser():
     parser = argparse.ArgumentParser()
+
     parser.add_argument('-n_way', type=int, default=5)
     parser.add_argument('-k_shot', type=int, default=1)
     parser.add_argument('-k_query', type=int, default=1)
-    parser.add_argument('-batchsz', type=int, default=1)
-    parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
     parser.add_argument('-im_size', type=int, default=224)
     return parser
 
 
-options = get_parser().parse_args()
+_opts = get_parser().parse_args()
+_basic_opts = get_basic_parser().parse_args()
+options = merge_and_setup(_opts, _basic_opts)
+
+
 n_way = options.n_way
 k_shot = options.k_shot
 k_query = options.k_query
@@ -48,7 +50,6 @@ if not os.path.exists('output/ckpt'):
 
 mdl_file = 'output/ckpt/best_%d_%d.mdl' % (n_way, k_shot)
 
-
 net = Compare(n_way, k_shot, gpu_id=gpu_id, im_size=im_size).to(device)
 # print(net)
 if os.path.exists(mdl_file):
@@ -56,7 +57,6 @@ if os.path.exists(mdl_file):
     net.load_state_dict(torch.load(mdl_file))
 
 if multi_gpu and device == 'cuda':
-    import pdb; pdb.set_trace()
     print('multi gpu mode ...')
     net = torch.nn.DataParallel(net)
 
