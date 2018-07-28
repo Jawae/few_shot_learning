@@ -1,4 +1,5 @@
 # Custom
+*.swp
 *.nfs*
 dataset/omniglot
 dataset/miniImagenet/images*
