@@ -5,41 +5,41 @@ from torch.utils import model_zoo
 __all__ = ['Bottleneck', 'repnet_deep']
 
 
-def conv3x3(in_planes, out_planes, stride=1):
-	"""3x3 convolution with padding"""
-	return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
+# def conv3x3(in_planes, out_planes, stride=1):
+# 	"""3x3 convolution with padding"""
+# 	return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
 
 
-class BasicBlock(nn.Module):
-	expansion = 1
-
-	def __init__(self, inplanes, planes, stride=1, downsample=None):
-		super(BasicBlock, self).__init__()
-		self.conv1 = conv3x3(inplanes, planes, stride)
-		self.bn1 = nn.BatchNorm2d(planes)
-		self.relu = nn.Sigmoid()
-		self.conv2 = conv3x3(planes, planes)
-		self.bn2 = nn.BatchNorm2d(planes)
-		self.downsample = downsample
-		self.stride = stride
-
-	def forward(self, x):
-		residual = x
-
-		out = self.conv1(x)
-		out = self.bn1(out)
-		out = self.relu(out)
-
-		out = self.conv2(out)
-		out = self.bn2(out)
-
-		if self.downsample is not None:
-			residual = self.downsample(x)
-
-		out += residual
-		out = self.relu(out)
-
-		return out
+# class BasicBlock(nn.Module):
+# 	expansion = 1
+#
+# 	def __init__(self, inplanes, planes, stride=1, downsample=None):
+# 		super(BasicBlock, self).__init__()
+# 		self.conv1 = conv3x3(inplanes, planes, stride)
+# 		self.bn1 = nn.BatchNorm2d(planes)
+# 		self.relu = nn.Sigmoid()
+# 		self.conv2 = conv3x3(planes, planes)
+# 		self.bn2 = nn.BatchNorm2d(planes)
+# 		self.downsample = downsample
+# 		self.stride = stride
+#
+# 	def forward(self, x):
+# 		residual = x
+#
+# 		out = self.conv1(x)
+# 		out = self.bn1(out)
+# 		out = self.relu(out)
+#
+# 		out = self.conv2(out)
+# 		out = self.bn2(out)
+#
+# 		if self.downsample is not None:
+# 			residual = self.downsample(x)
+#
+# 		out += residual
+# 		out = self.relu(out)
+#
+# 		return out
 
 
 class Bottleneck(nn.Module):
@@ -111,7 +111,6 @@ class ResNet(nn.Module):
 				          kernel_size=1, stride=stride, bias=False),
 				nn.BatchNorm2d(planes * block.expansion),
 			)
-
 		layers = []
 		layers.append(block(self.inplanes, planes, stride, downsample))
 		self.inplanes = planes * block.expansion
@@ -135,8 +134,6 @@ class ResNet(nn.Module):
 
 def repnet_deep(pretrained=False, **kwargs):
 	"""Constructs a ResNet-Mini-Imagenet model.
-
-	Args:
 	"""
 	model_urls = {
 		'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -145,10 +142,9 @@ def repnet_deep(pretrained=False, **kwargs):
 		'resnet101': 'https://download.pytorch.org/models/resnet101-5d3b4d8f.pth',
 		'resnet152': 'https://download.pytorch.org/models/resnet152-b121ed2d.pth',
 	}
-
-	model = ResNet(Bottleneck, [3, 4, 6], **kwargs)
-	#which_model = kwargs['which_model']
-	#assert which_model in model_urls.keys()
+	# TODO: for now only supports resnet18
+	if kwargs['structure'] == 'resnet18':
+		model = ResNet(Bottleneck, [3, 4, 6])
 	if pretrained:
-		model.load_state_dict(model_zoo.load_url(model_urls['resnet18']), strict=False)
+		model.load_state_dict(model_zoo.load_url(model_urls[kwargs['structure']]), strict=False)
 	return model

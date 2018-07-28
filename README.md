@@ -2,11 +2,12 @@
 
 Refactored by [@hli2020](https://github.com/hli2020). This repo contains:
 
-- Prototypical Networks for Few-shot Learning, denoted as `nips17_proto`. Forked repo. Performance.
+- Prototypical Networks for Few-shot Learning, denoted as `nips17_proto`. Forked repo.
 
-- Few-shot learning with graph neural networks, denoted as `iclr18_gnn`. Forked repo. Performance
+- Few-shot learning with graph neural networks, denoted as `iclr18_gnn`. Forked repo.
 
-- Learning to compare: relation network for few-shot learning. Forked repo. Performance.
+- Learning to compare: relation network for few-shot learning.
+[Forked repo](https://github.com/dragen1860/LearningToCompare-Pytorch).
 
 ## Overview
 
