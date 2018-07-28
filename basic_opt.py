@@ -56,9 +56,9 @@ def get_basic_parser(parser):
                         nargs='+',
                         help='put -1 if in CPU mode',
                         default=0)
-
-    parser.add_argument('-iter_vis_loss', type=int, default=20)
-    parser.add_argument('-iter_do_val', type=int, default=200)
+    # TODO: debug mode smaller interval
+    parser.add_argument('-iter_vis_loss', type=int, default=100)
+    parser.add_argument('-iter_do_val', type=int, default=2000)
 
     # TODO: visualization
     parser.add_argument('-use_tensorboard', action='store_true')
@@ -79,7 +79,7 @@ def setup(opt2):
         opt2.output_folder, '{:d}_way_{:d}_shot.hyli'.format(opt2.n_way, opt2.k_shot))
 
     prefix = '[{:s}]'.format(opt2.model_file.replace(opt2.root+'/', '').replace('.hyli', ''))
-    opt2.loss_vis_str = prefix + ' [ep {:04d} / iter {:06d}] loss: {:.4f}'
+    opt2.loss_vis_str = prefix + ' [ep({}) {:04d} / iter({}) {:06d}] loss: {:.4f}'
 
     if opt2.use_tensorboard:
         opt2.tb_folder = os.path.join(opt2.output_folder, 'runs')
