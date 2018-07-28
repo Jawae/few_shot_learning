@@ -13,7 +13,6 @@ from torch.optim.lr_scheduler import MultiStepLR
 from tools.utils import print_log, show_result
 
 
-
 def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n_way', type=int, default=5)
@@ -65,6 +64,7 @@ print_log('\nPipeline starts now !!!', opts.log_file)
 
 old_lr = optimizer.param_groups[0]['initial_lr']
 
+total_ep, total_iter = opts.nep, len(train_db)
 for epoch in range(opts.nep):
 
     old_lr = optimizer.param_groups[0]['lr']
@@ -96,7 +96,7 @@ for epoch in range(opts.nep):
         if step % opts.iter_vis_loss == 0 or step == len(train_db)-1:
             if opts.use_tensorboard:
                 tb.add_scalar('loss', loss.item())
-            print_log(opts.loss_vis_str.format(epoch, step, loss.item()), opts.log_file)
+            print_log(opts.loss_vis_str.format(total_ep, epoch, total_iter, step, loss.item()), opts.log_file)
 
         # VALIDATION SET
         if step % opts.iter_do_val == 0:
