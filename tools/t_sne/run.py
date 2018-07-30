@@ -51,7 +51,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 # CREATE MODEL
 if use_v:
     from vtsne import VTSNE
-    model = VTSNE(n_points, n_topics)
+    model = VTSNE(n_points, n_topics, device)
     result_folder = 'results'
 else:
     from tsne import TSNE

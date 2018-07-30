@@ -35,6 +35,9 @@ class Wrapper(object):
                 datas = [torch.from_numpy(data).to(self.device) for data in datas]
                 self.optimizer.zero_grad()
                 loss = self.model(*datas)
+               
+                #import pdb
+                #pdb.set_trace() 
                 loss.backward()
                 self.optimizer.step()
                 total += loss.item()
