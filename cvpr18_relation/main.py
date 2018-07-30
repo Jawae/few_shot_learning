@@ -4,7 +4,7 @@ from torch import optim
 from network import Relation
 
 from torchvision.utils import make_grid
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 from basic_opt import *
 import sys
 sys.path.append(os.getcwd())

@@ -12,9 +12,8 @@ def pairwise(data):
 
 
 class TSNE(nn.Module):
-    def __init__(self, n_points, n_topics, n_dim):
+    def __init__(self, n_points, n_topics):
         self.n_points = n_points
-        self.n_dim = n_dim
         super(TSNE, self).__init__()
         # Logit of datapoint-to-topic weight
         self.logits = nn.Embedding(n_points, n_topics)

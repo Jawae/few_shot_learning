@@ -32,35 +32,38 @@ def preprocess(perplexity=30, metric='euclidean'):
 # PARAMS
 use_v = True
 draw_ellipse = True
-n_points, pij2d, y = preprocess()   # mnist dataset, n_points is the sample number
-i, j = np.indices(pij2d.shape)
+n_topics = 2
+total_ep = 500
+
+# PREPARE DATA
+n_points, _pij2d, y = preprocess()   # mnist dataset, n_points is the sample number
+i, j = np.indices(_pij2d.shape)
 i = i.ravel()
 j = j.ravel()
-pij = pij2d.ravel().astype('float32')
+pij = _pij2d.ravel().astype('float32')
 # Remove self-indices
 idx = i != j
 i, j, pij = i[idx], j[idx], pij[idx]
 
-n_topics = 2
-n_dim = 2
-print('sample number {}; dim {}; topic {}'.format(n_points, n_dim, n_topics))
+print('sample number {}; topic {}'.format(n_points, n_topics))
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-if not os.path.exists('results'):
-    os.makedirs('results')
-
+# CREATE MODEL
 if use_v:
     from vtsne import VTSNE
-    model = VTSNE(n_points, n_topics, n_dim, device)
+    model = VTSNE(n_points, n_topics)
+    result_folder = 'results'
 else:
     from tsne import TSNE
-    model = TSNE(n_points, n_points, n_dim)
+    model = TSNE(n_points, n_points)
+    result_folder = 'res_not_v'
+if not os.path.exists(result_folder):
+    os.makedirs(result_folder)
 
 wrap = Wrapper(model, device, epochs=1, batchsize=4096)
 
 # PIPELINE
-for itr in range(500):
+for itr in range(total_ep):
 
     wrap.fit(pij, i, j)
 
@@ -80,11 +83,11 @@ for itr in range(500):
         ax.set_xlim(-9, 9)
         ax.set_ylim(-9, 9)
         plt.axis('off')
-        plt.savefig('results/scatter_{:03d}.png'.format(itr), bbox_inches='tight')
+        plt.savefig(os.path.join(result_folder, 'scatter_{:03d}.png'.format(itr)), bbox_inches='tight')
         plt.close(f)
 
     else:
         plt.scatter(embed[:, 0], embed[:, 1], c=y * 1.0 / y.max())
         plt.axis('off')
-        plt.savefig('results/scatter_{:03d}.png'.format(itr), bbox_inches='tight')
+        plt.savefig(os.path.join(result_folder, 'scatter_{:03d}.png'.format(itr)), bbox_inches='tight')
         plt.close(f)

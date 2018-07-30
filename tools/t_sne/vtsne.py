@@ -1,6 +1,5 @@
 import torch
 import torch.autograd
-from torch.autograd import Variable
 from torch import nn
 
 
@@ -13,14 +12,12 @@ def pairwise(data):
 
 
 class VTSNE(nn.Module):
-    def __init__(self, n_points, n_topics, n_dim, device):
+    def __init__(self, n_points, n_topics, device):
         super(VTSNE, self).__init__()
-        self.device = device
-        self.n_points = n_points
-        self.n_dim = n_dim
         # Logit of datapoint-to-topic weight
         self.logits_mu = nn.Embedding(n_points, n_topics)
         self.logits_lv = nn.Embedding(n_points, n_topics)
+        self.device = device
     
     @property
     def logits(self):
