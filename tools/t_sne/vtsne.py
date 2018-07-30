@@ -41,15 +41,16 @@ class VTSNE(nn.Module):
             return self.reparametrize(self.logits_mu(i), self.logits_lv(i))
 
     def forward(self, pij, i, j):
+        pij = pij.float()
         # Get for all points
-        x, loss_kldrp = self.sample_logits()
+        x, loss_kldrp = self.sample_logits()    # x is z, [1083 x 2]
         # Compute squared pairwise distances
         dkl2 = pairwise(x)
         # Compute partition function
         n_diagonal = dkl2.size()[0]
         part = (1 + dkl2).pow(-1.0).sum() - n_diagonal
         # Compute the numerator
-        xi, _ = self.sample_logits(i)
+        xi, _ = self.sample_logits(i)    # xi, 4096 x 2
         xj, _ = self.sample_logits(j)
         num = ((1. + (xi - xj)**2.0).sum(1)).pow(-1.0).squeeze()
         qij = num / part.expand_as(num)
