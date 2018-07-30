@@ -1,9 +1,8 @@
 import numpy as np
 import os
+import torch
 
 from wrapper import Wrapper
-# from tsne import TSNE
-from vtsne import VTSNE
 
 from sklearn import manifold, datasets
 from sklearn.metrics.pairwise import pairwise_distances
@@ -30,8 +29,10 @@ def preprocess(perplexity=30, metric='euclidean'):
     return n_points, pij, y
 
 
+# PARAMS
+use_v = True
 draw_ellipse = True
-n_points, pij2d, y = preprocess()
+n_points, pij2d, y = preprocess()   # mnist dataset, n_points is the sample number
 i, j = np.indices(pij2d.shape)
 i = i.ravel()
 j = j.ravel()
@@ -42,26 +43,32 @@ i, j, pij = i[idx], j[idx], pij[idx]
 
 n_topics = 2
 n_dim = 2
-print(n_points, n_dim, n_topics)
+print('sample number {}; dim {}; topic {}'.format(n_points, n_dim, n_topics))
 
-model = VTSNE(n_points, n_topics, n_dim)
-wrap = Wrapper(model, batchsize=4096, epochs=1)
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 if not os.path.exists('results'):
     os.makedirs('results')
 
+if use_v:
+    from vtsne import VTSNE
+    model = VTSNE(n_points, n_topics, n_dim, device)
+else:
+    from tsne import TSNE
+    model = TSNE(n_points, n_points, n_dim)
+
+wrap = Wrapper(model, device, epochs=1, batchsize=4096)
+
+# PIPELINE
 for itr in range(500):
+
     wrap.fit(pij, i, j)
 
     # Visualize the results
     embed = model.logits.weight.cpu().data.numpy()
     f = plt.figure()
-    if not draw_ellipse:
-        plt.scatter(embed[:, 0], embed[:, 1], c=y * 1.0 / y.max())
-        plt.axis('off')
-        plt.savefig('results/scatter_{:03d}.png'.format(itr), bbox_inches='tight')
-        plt.close(f)
-    else:
+
+    if draw_ellipse:
         # Visualize with ellipses
         var = np.sqrt(model.logits_lv.weight.clone().exp_().cpu().data.numpy())
         ax = plt.gca()
@@ -76,4 +83,8 @@ for itr in range(500):
         plt.savefig('results/scatter_{:03d}.png'.format(itr), bbox_inches='tight')
         plt.close(f)
 
-
+    else:
+        plt.scatter(embed[:, 0], embed[:, 1], c=y * 1.0 / y.max())
+        plt.axis('off')
+        plt.savefig('results/scatter_{:03d}.png'.format(itr), bbox_inches='tight')
+        plt.close(f)

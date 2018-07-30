@@ -1,10 +1,6 @@
 import torch
 import torch.autograd
-import torch.nn.functional as F
-from torch.autograd import Variable
 from torch import nn
-
-import numpy as np
 
 
 def pairwise(data):
@@ -24,7 +20,7 @@ class TSNE(nn.Module):
         self.logits = nn.Embedding(n_points, n_topics)
 
     def forward(self, pij, i, j):
-        # Get  for all points
+        # Get for all points
         x = self.logits.weight
         # Compute squared pairwise distances
         dkl2 = pairwise(x)

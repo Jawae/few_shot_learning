@@ -1,10 +1,7 @@
 import torch
 import torch.autograd
-import torch.nn.functional as F
 from torch.autograd import Variable
 from torch import nn
-
-import numpy as np
 
 
 def pairwise(data):
@@ -16,10 +13,11 @@ def pairwise(data):
 
 
 class VTSNE(nn.Module):
-    def __init__(self, n_points, n_topics, n_dim):
+    def __init__(self, n_points, n_topics, n_dim, device):
+        super(VTSNE, self).__init__()
+        self.device = device
         self.n_points = n_points
         self.n_dim = n_dim
-        super(VTSNE, self).__init__()
         # Logit of datapoint-to-topic weight
         self.logits_mu = nn.Embedding(n_points, n_topics)
         self.logits_lv = nn.Embedding(n_points, n_topics)
@@ -33,10 +31,7 @@ class VTSNE(nn.Module):
         # https://github.com/pytorch/examples/blob/master/vae/main.py
         std = logvar.mul(0.5).exp_()
         eps = torch.FloatTensor(std.size()).normal_()
-        cuda = False
-        if cuda:
-            eps = eps.cuda()
-        eps = Variable(eps)
+        eps = eps.to(self.device)
         z = eps.mul(std).add_(mu)
         kld = mu.pow(2).add_(logvar.exp()).mul_(-1).add_(1).add_(logvar)
         kld = torch.sum(kld).mul_(-0.5)
@@ -49,7 +44,7 @@ class VTSNE(nn.Module):
             return self.reparametrize(self.logits_mu(i), self.logits_lv(i))
 
     def forward(self, pij, i, j):
-        # Get  for all points
+        # Get for all points
         x, loss_kldrp = self.sample_logits()
         # Compute squared pairwise distances
         dkl2 = pairwise(x)
