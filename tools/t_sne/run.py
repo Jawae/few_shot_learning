@@ -34,7 +34,7 @@ def preprocess(perplexity=30, metric='euclidean'):
     # remove self-indices
     idx = i != j
     i, j, out_p_ij = i[idx], j[idx], out_p_ij[idx]
-    return n_points, pij, i, j, y
+    return n_points, out_p_ij, i, j, y
 
 
 def chunks(n, *args):
@@ -51,11 +51,11 @@ def chunks(n, *args):
 
 
 # PARAMS
-use_v = False
+use_v = True
 draw_ellipse = True
 n_topics = 2
 total_ep = 500
-batch_size = 1024
+batch_size = 4096
 
 # PREPARE DATA
 # mnist dataset, n_points is the sample number
@@ -67,7 +67,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 if use_v:
     from vtsne import VTSNE
     model = VTSNE(n_points, n_topics, device)
-    result_folder = 'results'
+    result_folder = 'results_bs_{}'.format(batch_size)
 else:
     from tsne import TSNE
     model = TSNE(n_points, n_points)
