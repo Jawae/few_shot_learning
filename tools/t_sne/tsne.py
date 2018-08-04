@@ -19,7 +19,6 @@ class TSNE(nn.Module):
         self.logits = nn.Embedding(n_points, n_topics)
 
     def forward(self, pij, i, j):
-        pij = pij.float()
         # Get for all points
         x = self.logits.weight
         # Compute squared pairwise distances
