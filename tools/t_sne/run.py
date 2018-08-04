@@ -4,7 +4,6 @@ import torch
 import torch.optim as optim
 import random
 
-from wrapper import Wrapper
 from sklearn import manifold, datasets
 from sklearn.metrics.pairwise import pairwise_distances
 from scipy.spatial.distance import squareform
@@ -34,7 +33,7 @@ def preprocess(perplexity=30, metric='euclidean'):
     # remove self-indices
     idx = i != j
     i, j, out_p_ij = i[idx], j[idx], out_p_ij[idx]
-    return n_points, pij, i, j, y
+    return n_points, out_p_ij, i, j, y
 
 
 def chunks(n, *args):
@@ -50,8 +49,9 @@ def chunks(n, *args):
         yield [a[start: stop] for a in args]
 
 
+# A simple demo on MNIST
 # PARAMS
-use_v = False
+use_v = True   # fixme (low): if use non-v version, it always OOM
 draw_ellipse = True
 n_topics = 2
 total_ep = 500
@@ -69,7 +69,7 @@ if use_v:
     model = VTSNE(n_points, n_topics, device)
     result_folder = 'results'
 else:
-    from tsne import TSNE
+    from archive.tsne import TSNE
     model = TSNE(n_points, n_points)
     result_folder = 'res_not_v'
 model = model.to(device)

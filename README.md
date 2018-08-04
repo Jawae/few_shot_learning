@@ -19,6 +19,11 @@ Refactored by [@hli2020](https://github.com/hli2020). This repo contains:
 
 - To run, see the scripts in `scripts` folder. Results will be logged in `output`
 
+
+## How to run it
+TODO.
+
+
 ## TODO list
 
 - [ ] Support tier-ImageNet

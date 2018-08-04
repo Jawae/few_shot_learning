@@ -8,7 +8,7 @@ output/
 .idea
 runs/
 *.pickle
-tools/t_sne/results
+tools/t_sne/res*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

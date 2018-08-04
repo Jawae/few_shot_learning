@@ -63,7 +63,6 @@ best_accuracy = 0
 print_log('\nPipeline starts now !!!', opts.log_file)
 
 old_lr = optimizer.param_groups[0]['initial_lr']
-
 total_ep, total_iter = opts.nep, len(train_db)
 for epoch in range(opts.nep):
 
