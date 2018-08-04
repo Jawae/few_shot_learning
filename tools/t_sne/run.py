@@ -51,11 +51,15 @@ def chunks(n, *args):
 
 # A simple demo on MNIST
 # PARAMS
+<<<<<<< HEAD
 use_v = True   # fixme (low): if use non-v version, it always OOM
+=======
+use_v = True
+>>>>>>> f952836cab891c1f2a1693f6c39f213a5b92cb81
 draw_ellipse = True
 n_topics = 2
 total_ep = 500
-batch_size = 1024
+batch_size = 4096
 
 # PREPARE DATA
 # mnist dataset, n_points is the sample number
@@ -67,7 +71,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 if use_v:
     from vtsne import VTSNE
     model = VTSNE(n_points, n_topics, device)
-    result_folder = 'results'
+    result_folder = 'results_bs_{}'.format(batch_size)
 else:
     from archive.tsne import TSNE
     model = TSNE(n_points, n_points)
