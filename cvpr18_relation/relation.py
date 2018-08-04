@@ -1,10 +1,8 @@
 import argparse
-import numpy as np
 from torch import optim
 from network import Relation
 
 from torchvision.utils import make_grid
-# from tensorboardX import SummaryWriter
 from basic_opt import *
 import sys
 sys.path.append(os.getcwd())
@@ -18,11 +16,10 @@ def get_parser():
     parser.add_argument('-n_way', type=int, default=5)
     parser.add_argument('-k_shot', type=int, default=2)
     parser.add_argument('-k_query', type=int, default=1)
-    parser.add_argument('-batchsz', type=int, default=1)
     parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
     parser.add_argument('-im_size', type=int, default=224)
     parser.add_argument('-network', type=str, default='resnet18')
-    parser.add_argument('-meta_batchsz_train', type=int, default=10000)   # 10000
+    parser.add_argument('-meta_batchsz_train', type=int, default=10000)
     parser.add_argument('-meta_batchsz_test', type=int, default=200)
     return parser
 
@@ -56,6 +53,7 @@ optimizer = optim.Adam(net.parameters(), lr=opts.lr, weight_decay=opts.weight_de
 scheduler = MultiStepLR(optimizer, milestones=opts.scheduler, gamma=opts.lr_scheduler_gamma)
 
 if opts.use_tensorboard:
+    from tensorboardX import SummaryWriter
     tb = SummaryWriter(opts.tb_folder, str(datetime.now()))
 
 # PIPELINE
@@ -64,6 +62,7 @@ print_log('\nPipeline starts now !!!', opts.log_file)
 
 old_lr = optimizer.param_groups[0]['initial_lr']
 total_ep, total_iter = opts.nep, len(train_db)
+
 for epoch in range(opts.nep):
 
     old_lr = optimizer.param_groups[0]['lr']

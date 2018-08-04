@@ -13,7 +13,7 @@ Refactored by [@hli2020](https://github.com/hli2020). This repo contains:
 
 - Supported datasets: Omniglot, Mini-ImageNet
 
-- PyTorch `0.4`
+- PyTorch `0.4.x` 
 
 - Multi-gpu if necessary
 
@@ -21,7 +21,12 @@ Refactored by [@hli2020](https://github.com/hli2020). This repo contains:
 
 
 ## How to run it
-TODO.
+
+Check the `scripts` folder to have a sense. Universal arguments across different methods are 
+stored in the `basic_opt.py` file. 
+The outputs are generated in the `output` folder **after** the training is launched.
+
+The refactored documents for each method are stored in the `doc` folder.
 
 
 ## TODO list

@@ -6,11 +6,19 @@ There are some more repos on this paper in the wild:
 
 - Zero-shot part, check [here](https://github.com/lzrobots/LearningToCompare_ZSL)
 
-### Performance reimplemented
+
+To run it in the terminal:
+
+    sh scripts/cvpr18.sh
+    
+For arguments available, check the ``get_parser`` function in  `cvpr18_relation/main.py` file.
+The universal arguments across different methods in located in `basic_opt.py`.
+
+### Re-implementation
 
 TODO.
 
-### Performance reported
+### Performance
 From the forked repo [here](https://github.com/dragen1860/LearningToCompare-Pytorch#mini-imagenet).
 
 | Model                               | Fine Tune | 5-way Acc. |        | 20-way Acc |        |

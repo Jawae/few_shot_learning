@@ -8,11 +8,11 @@
 # LICENSE file in the root directory of this source tree
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'''
+"""
 This code creates the MiniImagenet dataset. Following the partitions given
 by Sachin Ravi and Hugo Larochelle in
 https://github.com/twitter/meta-learning-lstm/tree/master/data/miniImagenet
-'''
+"""
 
 import numpy as np
 import csv

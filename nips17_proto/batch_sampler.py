@@ -45,9 +45,8 @@ class PrototypicalBatchSampler(object):
             self.numel_per_class[label_idx] += 1
 
     def __iter__(self):
-        '''
-        yield a batch of indexes
-        '''
+        """yield a batch of indexes"""
+
         spc = self.sample_per_class
         cpi = self.classes_per_it
 
@@ -65,7 +64,7 @@ class PrototypicalBatchSampler(object):
             yield batch
 
     def __len__(self):
-        '''
-        returns the number of iterations (episodes) per epoch
-        '''
+        """
+        :return: the number of iterations (episodes) per epoch
+        """
         return self.iterations

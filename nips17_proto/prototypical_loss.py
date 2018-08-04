@@ -1,21 +1,7 @@
 # coding=utf-8
 import torch
 from torch.nn import functional as F
-from torch.nn.modules import Module
-from torch.nn.modules.loss import _assert_no_grad
 
-
-# class PrototypicalLoss(Module):
-#     """
-#     Loss class deriving from Module for the prototypical loss function defined below
-#     """
-#     def __init__(self, n_support):
-#         super(PrototypicalLoss, self).__init__()
-#         self.n_support = n_support
-#
-#     def forward(self, input, target):
-#         _assert_no_grad(target)
-#         return prototypical_loss(input, target, self.n_support)
 
 def cosine_dist(x, y):
     n = x.size(0)
@@ -63,7 +49,7 @@ def prototypical_loss(input, target, n_support, **args):
     barycentres, for each one of the current classes
     :return:
     """
-    # hyli: why to cpu
+    # TODO (hyli, high): why to cpu
     target_cpu = target.to('cpu')
     input_cpu = input.to('cpu')
 

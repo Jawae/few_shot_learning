@@ -8,10 +8,7 @@ import errno
 import torch
 import os
 
-'''
-Inspired by https://github.com/pytorch/vision/pull/46
-'''
-
+"""Inspired by https://github.com/pytorch/vision/pull/46"""
 IMG_CACHE = {}
 
 
@@ -34,14 +31,14 @@ class OmniglotDataset(data.Dataset):
     processed_folder = 'data'
 
     def __init__(self, mode='train', root='../dataset', transform=None, target_transform=None, download=True):
-        '''
+        """
         The items are (filename,category). The index of all the categories can be found in self.idx_classes
         Args:
-        - root: the directory where the dataset will be stored
-        - transform: how to transform the input
-        - target_transform: how to transform the target
-        - download: need to download the dataset
-        '''
+            - root: the directory where the dataset will be stored
+            - transform: how to transform the input
+            - target_transform: how to transform the target
+            - download: need to download the dataset
+        """
         super(OmniglotDataset, self).__init__()
         self.root = root
         self.transform = transform
@@ -153,7 +150,7 @@ def find_items(root_dir, classes):
 def index_classes(items):
     idx = {}
     for i in items:
-        if (not i[1] + i[-1] in idx):
+        if not i[1] + i[-1] in idx:
             idx[i[1] + i[-1]] = len(idx)
     print("== Dataset: Found %d classes" % len(idx))
     return idx

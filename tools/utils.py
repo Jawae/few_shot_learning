@@ -36,7 +36,7 @@ def im_map_back(im, std, mean):
 
 def show_result(opts, support_x, support_y, query_x, query_y, query_pred,
                 mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
-    """show result of one dimension"""
+    """show result of one dimension (cvpr 2018 relation paper)"""
     n_way = opts.n_way
     k_shot = opts.k_shot
     n_query_per_cls = opts.k_query
@@ -53,7 +53,7 @@ def show_result(opts, support_x, support_y, query_x, query_y, query_pred,
     img_support = im_map_back(img_support, std, mean)
     img_query = im_map_back(img_query, std, mean)
 
-    # hyli: no idea what's going on here; check later
+    # TODO (hyli): no idea what's going on here; check later
     label = support_y[batchidx]                                             # [setsz]
     label, indices = torch.sort(label, dim=0)
     img_support = torch.index_select(img_support, dim=0, index=indices)     # [setsz, c, h, w]
@@ -76,7 +76,7 @@ def show_result(opts, support_x, support_y, query_x, query_y, query_pred,
                 pos += 1
 
         # set the last several column as the right img
-		# [max_width - n_query_per_cls, max_width)
+        #  [max_width - n_query_per_cls, max_width)
         pos = max_width - n_query_per_cls
         for idx, img in enumerate(img_query):  # search all imgs in pred that match current row id: label[row*k_shot]
             if torch.equal(query_y[batchidx][idx], label[row * k_shot]):  # if query_y id match current id

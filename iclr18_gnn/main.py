@@ -81,7 +81,7 @@ def _init_():
         os.makedirs('output/'+args.exp_name)
     if not os.path.exists('output/'+args.exp_name+'/'+'models'):
         os.makedirs('output/'+args.exp_name+'/'+'models')
-    # os.system('cp main.py output'+'/'+args.exp_name+'/'+'main.py.backup')
+    # os.system('cp relation.py output'+'/'+args.exp_name+'/'+'relation.py.backup')
     # os.system('cp models/models.py output' + '/' + args.exp_name + '/' + 'models.py.backup')
 
 

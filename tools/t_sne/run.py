@@ -51,11 +51,7 @@ def chunks(n, *args):
 
 # A simple demo on MNIST
 # PARAMS
-<<<<<<< HEAD
 use_v = True   # fixme (low): if use non-v version, it always OOM
-=======
-use_v = True
->>>>>>> f952836cab891c1f2a1693f6c39f213a5b92cb81
 draw_ellipse = True
 n_topics = 2
 total_ep = 500

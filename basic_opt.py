@@ -2,6 +2,7 @@
 import os
 import torch
 import datetime
+import numpy as np
 from tools.utils import print_log
 
 
@@ -11,38 +12,42 @@ def get_basic_parser(parser):
                         type=str,
                         default='output')
 
-    parser.add_argument('-dataset',
-                        type=str,
-                        default='mini-imagenet')
+    # parser.add_argument('-dataset',
+    #                     type=str,
+    #                     default='mini-imagenet')
+    #                     # default='omniglot')
 
     # output folder: output/METHOD/DATASET/exp_name
     parser.add_argument('-exp_name', type=str, default='default')
 
     # TRAINING STATS
+    # these numbers might differ on various datasets
     parser.add_argument('-nep',
                         type=int,
                         help='number of epochs to train for',
-                        default=500)
+                        default=500)   # 100 for proto_net
+
     parser.add_argument('-lr',
                         type=float,
                         help='learning rate for the model, default=0.001',
                         default=0.001)
-    # parser.add_argument('-lrS', '--lr_scheduler_step',
-    #                     type=int,
-    #                     help='StepLR learning rate scheduler step, default=20',
-    #                     default=20)
     parser.add_argument('-scheduler', type=list, default=[300, 400])
+
     parser.add_argument('-lrG', '--lr_scheduler_gamma',
                         type=float,
                         help='StepLR learning rate scheduler gamma, default=0.5',
                         default=0.5)
-    # parser.add_argument('-its', '--iterations',
-    #                     type=int,
-    #                     help='number of episodes per epoch, default=100',
-    #                     default=100)
-    parser.add_argument('-batch_sz',
+
+    parser.add_argument('-lrS', '--lr_scheduler_step',
                         type=int,
-                        default=2)
+                        help='StepLR learning rate scheduler step, default=20',
+                        default=20)
+    parser.add_argument('-its', '--iterations',
+                        type=int,
+                        help='number of episodes per epoch, default=100',
+                        default=100)
+
+    parser.add_argument('-batch_sz', type=int, default=2)
     parser.add_argument('-weight_decay', type=float, default=0.0005)
 
     # MISC
@@ -68,12 +73,20 @@ def get_basic_parser(parser):
 
 def setup(opt2):
 
+    np.random.seed(opt2.manual_seed)
+    torch.manual_seed(opt2.manual_seed)
+    torch.cuda.manual_seed(opt2.manual_seed)
+
     # opt2.__dict__.update(opt1.__dict__)i
     opt2.gpu_id = opt2.device_id
     opt2.output_folder = os.path.join(opt2.root, opt2.method, opt2.dataset, opt2.exp_name)
 
     if not os.path.exists(opt2.output_folder):
         os.makedirs(opt2.output_folder)
+
+    # sanity check
+    if not hasattr(opt2, 'n_way'):
+        opt2.n_way = opt2.classes_per_it_tr
 
     opt2.model_file = os.path.join(
         opt2.output_folder, '{:d}_way_{:d}_shot.hyli'.format(opt2.n_way, opt2.k_shot))
