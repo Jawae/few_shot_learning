@@ -81,7 +81,7 @@ class Relation(nn.Module):
 
         batchsz, setsz, c_, h, w = support_x.size()
         querysz = query_x.size(1)
-        c, d = self.c, self.d
+        c, d = self.c, self.d   # todo: can c and d be self-determined?
 
         support_xf = self.repnet(support_x.view(batchsz * setsz, c_, h, w)).view(batchsz, setsz, c, d, d)
         query_xf = self.repnet(query_x.view(batchsz * querysz, c_, h, w)).view(batchsz, querysz, c, d, d)
