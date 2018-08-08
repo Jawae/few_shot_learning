@@ -14,8 +14,7 @@ from torch.optim.lr_scheduler import MultiStepLR, StepLR
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-dataset', type=str, default='omniglot')
-    # default='omniglot')
+    parser.add_argument('-dataset', type=str, default='omniglot')       # mini-imagenet
     # used in data_loader.py for omniglot
     parser.add_argument('-classes_per_it_tr', type=int, default=60)     # just the N-way
     parser.add_argument('-classes_per_it_val', type=int, default=5)
@@ -27,10 +26,6 @@ def get_parser():
     parser.add_argument('-num_query_val', type=int, default=15)         # just the k_query for validation
 
     parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
-    # parser.add_argument('-im_size', type=int, default=224)
-    # parser.add_argument('-network', type=str, default='resnet18')
-    # parser.add_argument('-meta_batchsz_train', type=int, default=10000)
-    # parser.add_argument('-meta_batchsz_test', type=int, default=200)
     parser.add_argument('-distance', type=str, help='cosine or euclidean', default='euclidean')
     return parser
 

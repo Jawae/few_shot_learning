@@ -11,7 +11,6 @@ def get_basic_parser(parser):
     parser.add_argument('-root',
                         type=str,
                         default='output')
-
     # parser.add_argument('-dataset',
     #                     type=str,
     #                     default='mini-imagenet')
@@ -61,7 +60,7 @@ def get_basic_parser(parser):
                         nargs='+',
                         help='put -1 if in CPU mode',
                         default=0)
-    # TODO: debug mode smaller interval
+    # TODO (low): debug mode smaller interval
     parser.add_argument('-iter_vis_loss', type=int, default=100)
     parser.add_argument('-iter_do_val', type=int, default=2000)
 
@@ -80,7 +79,6 @@ def setup(opt2):
     # opt2.__dict__.update(opt1.__dict__)i
     opt2.gpu_id = opt2.device_id
     opt2.output_folder = os.path.join(opt2.root, opt2.method, opt2.dataset, opt2.exp_name)
-
     if not os.path.exists(opt2.output_folder):
         os.makedirs(opt2.output_folder)
 
@@ -88,8 +86,19 @@ def setup(opt2):
     if not hasattr(opt2, 'n_way'):
         opt2.n_way = opt2.classes_per_it_tr
 
-    opt2.model_file = os.path.join(
-        opt2.output_folder, '{:d}_way_{:d}_shot.hyli'.format(opt2.n_way, opt2.k_shot))
+    if opt2.method == 'gnn':
+        opt2.model_file = os.path.join(
+            opt2.output_folder, '{:d}_way_{:d}_shot_enc_nn.hyli'.format(opt2.n_way, opt2.k_shot))
+        opt2.model_file2 = os.path.join(
+            opt2.output_folder, '{:d}_way_{:d}_shot_metric_nn.hyli'.format(opt2.n_way, opt2.k_shot))
+
+        opt2.train_N_way = opt2.n_way
+        opt2.test_N_way = opt2.train_N_way
+        opt2.train_N_shots = opt2.k_shot
+        opt2.test_N_shots = opt2.train_N_shots
+    else:
+        opt2.model_file = os.path.join(
+            opt2.output_folder, '{:d}_way_{:d}_shot.hyli'.format(opt2.n_way, opt2.k_shot))
 
     prefix = '[{:s}]'.format(opt2.model_file.replace(opt2.root+'/', '').replace('.hyli', ''))
     opt2.loss_vis_str = prefix + ' [ep({}) {:04d} / iter({}) {:06d}] loss: {:.4f}'

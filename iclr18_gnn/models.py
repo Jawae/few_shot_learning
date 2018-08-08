@@ -1,4 +1,4 @@
-from gnn_iclr import *
+from sub_module import *
 
 
 class EmbeddingOmniglot(nn.Module):
@@ -106,10 +106,14 @@ class MetricNN(nn.Module):
         if self.metric_network == 'gnn_iclr_nl':
             assert(self.args.train_N_way == self.args.test_N_way)
             num_inputs = self.emb_size + self.args.train_N_way
-            if self.args.dataset == 'mini_imagenet':
+
+            if self.args.dataset == 'mini-imagenet':
                 self.gnn_obj = GNN_nl(args, num_inputs, nf=96, J=1)
             elif 'omniglot' in self.args.dataset:
                 self.gnn_obj = GNN_nl_omniglot(args, num_inputs, nf=96, J=1)
+            else:
+                raise NameError('Unknown dataset')
+
         elif self.metric_network == 'gnn_iclr_active':
             assert(self.args.train_N_way == self.args.test_N_way)
             num_inputs = self.emb_size + self.args.train_N_way
@@ -169,35 +173,5 @@ class MetricNN(nn.Module):
             raise NotImplementedError
 
 
-class SoftmaxModule:
-    def __init__(self):
-        self.softmax_metric = 'log_softmax'
-
-    def forward(self, outputs):
-        if self.softmax_metric == 'log_softmax':
-            return F.log_softmax(outputs)
-        else:
-            raise NotImplementedError
 
 
-def load_model(model_name, args, io):
-    try:
-        model = torch.load('output/%s/models/%s.t7' % (args.exp_name, model_name))
-        io.cprint('Loading Parameters from the last trained %s Model' % model_name)
-        return model
-    except:
-        io.cprint('Initiallize new Network Weights for %s' % model_name)
-        pass
-    return None
-
-
-def create_models(args):
-    print(args.dataset)
-
-    if 'omniglot' == args.dataset:
-        enc_nn = EmbeddingOmniglot(args, 64)
-    elif 'mini_imagenet' == args.dataset:
-        enc_nn = EmbeddingImagenet(args, 128)
-    else:
-        raise NameError('Dataset ' + args.dataset + ' not knows')
-    return enc_nn, MetricNN(args, emb_size=enc_nn.emb_size)

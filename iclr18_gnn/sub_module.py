@@ -1,17 +1,7 @@
-#!/usr/bin/python
-# -*- coding: UTF-8 -*-
-# Pytorch requirements
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
-
-if torch.cuda.is_available():
-    dtype = torch.cuda.FloatTensor
-    dtype_l = torch.cuda.LongTensor
-else:
-    dtype = torch.FloatTensor
-    dtype_l = torch.cuda.LongTensor
 
 
 def gmul(input):

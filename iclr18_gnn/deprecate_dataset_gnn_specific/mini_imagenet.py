@@ -5,7 +5,7 @@ import os.path
 import numpy as np
 from PIL import Image as pil_image
 import pickle
-from iclr18_gnn.io_utils import pickle_dump, pickle_load
+from tools.io_utils import pickle_dump, pickle_load
 
 
 def _process_im(path):

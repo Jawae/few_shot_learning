@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # base_101
-CUDA_VISIBLE_DEVICES=2,3 python cvpr18_relation/main.py \
+CUDA_VISIBLE_DEVICES=2,3 python cvpr18_relation/relation.py \
     -device_id 2 3 \
     -exp_name base_101 \
     -dataset mini-imagenet \

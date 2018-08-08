@@ -3,7 +3,6 @@ import torch.utils.data as data
 import torch
 import numpy as np
 import random
-from torch.autograd import Variable
 from . import omniglot
 from . import mini_imagenet
 
@@ -105,10 +104,7 @@ class Generator(data.Dataset):
         return_arr = [torch.from_numpy(batch_x), torch.from_numpy(labels_x), torch.from_numpy(labels_x_scalar),
                       torch.from_numpy(labels_x_global), batches_xi, labels_yi, oracles_yi,
                       torch.from_numpy(hidden_labels)]
-        # if cuda:
-        #     return_arr = self.cast_cuda(return_arr)
-        # if variable:
-        #     return_arr = self.cast_variable(return_arr)
+
         for i, tensor in enumerate(return_arr):
             if isinstance(tensor, list):
                 for j, sub_tensor in enumerate(tensor):
@@ -118,18 +114,3 @@ class Generator(data.Dataset):
 
         return return_arr
 
-    # def cast_cuda(self, input):
-    #     if type(input) == type([]):
-    #         for i in range(len(input)):
-    #             input[i] = self.cast_cuda(input[i])
-    #     else:
-    #         return input.cuda()
-    #     return input
-    #
-    # def cast_variable(self, input):
-    #     if type(input) == type([]):
-    #         for i in range(len(input)):
-    #             input[i] = self.cast_variable(input[i])
-    #     else:
-    #         return Variable(input)
-    #     return input
