@@ -16,8 +16,8 @@ from tools.utils import print_log
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('-dataset', type=str, default='omniglot')
-    parser.add_argument('-dataset', type=str, default='mini-imagenet')
+    parser.add_argument('-dataset', type=str, default='omniglot')
+    # parser.add_argument('-dataset', type=str, default='mini-imagenet')
     parser.add_argument('-n_way', type=int, default=5)              # train_N_way
     parser.add_argument('-k_shot', type=int, default=2)             # train_N_shots
     parser.add_argument('-k_query', type=int, default=1)

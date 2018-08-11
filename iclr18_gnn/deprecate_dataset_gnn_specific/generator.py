@@ -39,11 +39,11 @@ class Generator(data.Dataset):
         for id_key, key in enumerate(self.data):
             self.class_encoder[key] = id_key
 
-    # def rotate_image(self, image, times):
-    #     rotated_image = np.zeros(image.shape)
-    #     for channel in range(image.shape[0]):
-    #         rotated_image[channel, :, :] = np.rot90(image[channel, :, :], k=times)
-    #     return rotated_image
+    def rotate_image(self, image, times):
+        rotated_image = np.zeros(image.shape)
+        for channel in range(image.shape[0]):
+            rotated_image[channel, :, :] = np.rot90(image[channel, :, :], k=times)
+        return rotated_image
 
     def get_task_batch(self, batch_size=5, n_way=20, num_shots=1, unlabeled_extra=0,
                        device='cpu', cuda=False, variable=False):
