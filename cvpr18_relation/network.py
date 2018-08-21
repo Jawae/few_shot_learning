@@ -4,7 +4,7 @@ from torch import nn
 from torch.nn import functional as F
 from repnet import repnet_deep, Bottleneck
 import sys
-# sys.path.append(os.getcwd())
+sys.path.append(os.getcwd())
 from tools.utils import print_log
 
 

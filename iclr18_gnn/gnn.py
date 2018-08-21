@@ -44,6 +44,7 @@ if opts.dataset == 'omniglot':
 elif opts.dataset == 'mini-imagenet':
     enc_nn = EmbeddingImagenet(opts, 128).to(opts.device)
 metric_nn = MetricNN(opts, emb_size=enc_nn.emb_size).to(opts.device)
+print('test')
 
 # RESUME (fixme with appropriate epoch and iter)
 if os.path.exists(opts.model_file) and os.path.exists(opts.model_file2):
