@@ -1,6 +1,8 @@
 # Custom
 *.swp
 *.nfs*
+*tier-imagenet.tar
+dataset/tierImagenet
 dataset/omniglot
 dataset/miniImagenet/images*
 output/

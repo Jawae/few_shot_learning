@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader
-# print(sys.path)
+from dataset.tierImagenet import tierImagenet
 from dataset.miniImagenet import miniImagenet
 from dataset.omniglot import OmniglotDataset
 from tools.utils import print_log
@@ -39,6 +39,20 @@ def data_loader(opts):
                                 log_file=opts.log_file, method=opts.method)
         val_db = DataLoader(val_data, opts.batch_sz, shuffle=True, num_workers=2, pin_memory=True)
 
+    elif opts.dataset == 'tier-imagenet':
+
+        train_data = tierImagenet('dataset/tierImagenet/', mode='train',
+                                  n_way=opts.n_way, k_shot=opts.k_shot, k_query=opts.k_query,
+                                  batchsz=opts.meta_batchsz_train, resize=opts.im_size,
+                                  log_file=opts.log_file, method=opts.method)
+        train_db = DataLoader(train_data, opts.batch_sz, shuffle=True, num_workers=8, pin_memory=True)
+
+        val_data = tierImagenet('dataset/tierImagenet/', mode='val',
+                                n_way=opts.n_way, k_shot=opts.k_shot, k_query=opts.k_query,
+                                batchsz=opts.meta_batchsz_test, resize=opts.im_size,
+                                log_file=opts.log_file, method=opts.method)
+        val_db = DataLoader(val_data, opts.batch_sz, shuffle=True, num_workers=2, pin_memory=True)
+
     elif opts.dataset == 'omniglot':
 
         print_log('\ntrain data ...', opts.log_file)
@@ -57,5 +71,8 @@ def data_loader(opts):
         print_log('\ntest data ...', opts.log_file)
         test_data = OmniglotDataset(mode='test', root='dataset/omniglot')
         test_db = DataLoader(test_data, batch_sampler=init_sampler(opts, test_data.y, 'test'))
+
+    else:
+        raise NameError('Unknown dataset!')
 
     return train_db, val_db, test_db, trainval_db
