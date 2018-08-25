@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 import torch.nn.functional as F
 
 
@@ -49,7 +48,8 @@ class Gconv(nn.Module):
 
 
 class Wcompute(nn.Module):
-    def __init__(self, input_features, nf, operator='J2', activation='softmax', ratio=[2,2,1,1], num_operators=1, drop=False):
+    def __init__(self, input_features, nf, operator='J2', activation='softmax',
+                 ratio=[2, 2, 1, 1], num_operators=1, drop=False):
         super(Wcompute, self).__init__()
         self.num_features = nf
         self.operator = operator
@@ -69,9 +69,9 @@ class Wcompute(nn.Module):
 
     def forward(self, x, W_id):
         W1 = x.unsqueeze(2)
-        W2 = torch.transpose(W1, 1, 2) #size: bs x N x N x num_features
-        W_new = torch.abs(W1 - W2) #size: bs x N x N x num_features
-        W_new = torch.transpose(W_new, 1, 3) #size: bs x num_features x N x N
+        W2 = torch.transpose(W1, 1, 2)          # size: bs x N x N x num_features
+        W_new = torch.abs(W1 - W2)              # size: bs x N x N x num_features
+        W_new = torch.transpose(W_new, 1, 3)    # size: bs x num_features x N x N
 
         W_new = self.conv2d_1(W_new)
         W_new = self.bn_1(W_new)
@@ -101,7 +101,7 @@ class Wcompute(nn.Module):
             W_new = W_new.contiguous()
             W_new_size = W_new.size()
             W_new = W_new.view(-1, W_new.size(3))
-            W_new = F.softmax(W_new)
+            W_new = F.softmax(W_new, dim=-1)
             W_new = W_new.view(W_new_size)
             # Softmax applied
             W_new = torch.transpose(W_new, 2, 3)
@@ -112,14 +112,14 @@ class Wcompute(nn.Module):
         elif self.activation == 'none':
             W_new *= (1 - W_id)
         else:
-            raise (NotImplementedError)
+            raise NotImplementedError
 
         if self.operator == 'laplace':
             W_new = W_id - W_new
         elif self.operator == 'J2':
             W_new = torch.cat([W_id, W_new], 3)
         else:
-            raise(NotImplementedError)
+            raise NotImplementedError
 
         return W_new
 
@@ -147,9 +147,8 @@ class GNN_nl_omniglot(nn.Module):
         self.layer_last = Gconv(self.input_features + int(self.nf / 2) * self.num_layers, args.train_N_way, 2, bn_bool=True)
 
     def forward(self, x):
-        W_init = Variable(torch.eye(x.size(1)).unsqueeze(0).repeat(x.size(0), 1, 1).unsqueeze(3))
-        if self.args.cuda:
-            W_init = W_init.cuda()
+        W_init = torch.eye(x.size(1)).unsqueeze(0).repeat(x.size(0), 1, 1).unsqueeze(3)
+        W_init = W_init.to(self.args.device)
 
         for i in range(self.num_layers):
             Wi = self._modules['layer_w{}'.format(i)](x, W_init)
@@ -190,9 +189,8 @@ class GNN_nl(nn.Module):
         self.layer_last = Gconv(self.input_features + int(self.nf / 2) * self.num_layers, args.train_N_way, 2, bn_bool=False)
 
     def forward(self, x):
-        W_init = Variable(torch.eye(x.size(1)).unsqueeze(0).repeat(x.size(0), 1, 1).unsqueeze(3))
-        if self.args.cuda:
-            W_init = W_init.cuda()
+        W_init = torch.eye(x.size(1)).unsqueeze(0).repeat(x.size(0), 1, 1).unsqueeze(3)
+        W_init = W_init.to(self.args.device)
 
         for i in range(self.num_layers):
             Wi = self._modules['layer_w{}'.format(i)](x, W_init)
@@ -270,9 +268,7 @@ class GNN_active(nn.Module):
         decision = decision.detach()
 
         mapping = torch.FloatTensor(decision.size(0),x_active.size(1)).zero_()
-        mapping = Variable(mapping)
-        if self.args.cuda:
-            mapping = mapping.cuda()
+        mapping = mapping.to(self.args.device)
         mapping.scatter_(1, decision, 1)
 
         mapping_bp = (x_active*mapping).unsqueeze(-1)
@@ -280,18 +276,15 @@ class GNN_active(nn.Module):
 
         label2add = mapping_bp*oracles_yi  # bsxNodesxN_way
         padd = torch.zeros(x.size(0), x.size(1), x.size(2) - label2add.size(2))
-        padd = Variable(padd).detach()
-        if self.args.cuda:
-            padd = padd.cuda()
+        padd = padd.to(self.args.device).detach()
         label2add = torch.cat([label2add, padd], 2)
 
         x = x+label2add
         return x
 
     def forward(self, x, oracles_yi, hidden_labels):
-        W_init = Variable(torch.eye(x.size(1)).unsqueeze(0).repeat(x.size(0), 1, 1).unsqueeze(3))
-        if self.args.cuda:
-            W_init = W_init.cuda()
+        W_init = torch.eye(x.size(1)).unsqueeze(0).repeat(x.size(0), 1, 1).unsqueeze(3)
+        W_init = W_init.to(self.args.device)
 
         for i in range(self.num_layers // 2):
             Wi = self._modules['layer_w{}'.format(i)](x, W_init)
@@ -311,18 +304,18 @@ class GNN_active(nn.Module):
         return out[:, 0, :]
 
 
-if __name__ == '__main__':
-    # test modules
-    bs = 4
-    nf = 10
-    num_layers = 5
-    N = 8
-    x = torch.ones((bs, N, nf))
-    W1 = torch.eye(N).unsqueeze(0).unsqueeze(-1).expand(bs, N, N, 1)
-    W2 = torch.ones(N).unsqueeze(0).unsqueeze(-1).expand(bs, N, N, 1)
-    J = 2
-    W = torch.cat((W1, W2), 3)
-    input = [Variable(W), Variable(x)]
+# if __name__ == '__main__':
+#     # test modules
+#     bs = 4
+#     nf = 10
+#     num_layers = 5
+#     N = 8
+#     x = torch.ones((bs, N, nf))
+#     W1 = torch.eye(N).unsqueeze(0).unsqueeze(-1).expand(bs, N, N, 1)
+#     W2 = torch.ones(N).unsqueeze(0).unsqueeze(-1).expand(bs, N, N, 1)
+#     J = 2
+#     W = torch.cat((W1, W2), 3)
+#     input = [Variable(W), Variable(x)]
     ######################### test gmul ##############################
     # feature_maps = [num_features, num_features, num_features]
     # out = gmul(input)

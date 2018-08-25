@@ -25,7 +25,7 @@ class EmbeddingOmniglot(nn.Module):
         self.bn4 = nn.BatchNorm2d(self.nef)
         # state size. (2*ndf) x 3 x 3
         self.fc_last = nn.Linear(3 * 3 * self.nef, self.emb_size, bias=False)
-        self.bn_last = nn.BatchNorm1d(self.emb_size)   # TODO: changed to 1d
+        self.bn_last = nn.BatchNorm1d(self.emb_size)   # TODO (high, check this): changed to 1d
 
     def forward(self, inputs):
         e1 = F.max_pool2d(self.bn1(self.conv1(inputs)), 2)
@@ -123,10 +123,7 @@ class MetricNN(nn.Module):
 
     def gnn_iclr_forward(self, z, zi_s, labels_yi):
         # Creating WW matrix
-        zero_pad = Variable(torch.zeros(labels_yi[0].size()))
-        if self.args.cuda:
-            zero_pad = zero_pad.cuda()
-
+        zero_pad = torch.zeros(labels_yi[0].size()).to(self.args.device)  # TODO (mid, hyli): remove this?
         labels_yi = [zero_pad] + labels_yi
         zi_s = [z] + zi_s
 
@@ -135,17 +132,15 @@ class MetricNN(nn.Module):
         nodes = torch.cat(nodes, 1)
 
         logits = self.gnn_obj(nodes).squeeze(-1)
-        outputs = F.sigmoid(logits)
+        outputs = torch.sigmoid(logits)
 
         return outputs, logits
 
     def gnn_iclr_active_forward(self, z, zi_s, labels_yi, oracles_yi, hidden_layers):
         # Creating WW matrix
-        zero_pad = Variable(torch.ones(labels_yi[0].size())*1.0/labels_yi[0].size(1))
-        if self.args.cuda:
-            zero_pad = zero_pad.cuda()
-
-        labels_yi = [zero_pad] + labels_yi
+        zero_pad = torch.ones(labels_yi[0].size())*1.0/labels_yi[0].size(1)
+        zero_pad = zero_pad.to(self.args.device)
+        labels_yi = zero_pad + labels_yi
         zi_s = [z] + zi_s
 
         nodes = [torch.cat([label_yi, zi], 1) for zi, label_yi in zip(zi_s, labels_yi)]

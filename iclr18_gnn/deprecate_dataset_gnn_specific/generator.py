@@ -50,10 +50,13 @@ class Generator(data.Dataset):
         # Init variables
         batch_x = np.zeros((batch_size, self.input_channels, self.size[0], self.size[1]), dtype='float32')
         labels_x = np.zeros((batch_size, n_way), dtype='float32')
+
         labels_x_global = np.zeros(batch_size, dtype='int64')
         target_distances = np.zeros((batch_size, n_way * num_shots), dtype='float32')
+
         hidden_labels = np.zeros((batch_size, n_way * num_shots + 1), dtype='float32')
         numeric_labels = []
+
         batches_xi, labels_yi, oracles_yi = [], [], []
         for i in range(n_way*num_shots):
             batches_xi.append(np.zeros((batch_size, self.input_channels, self.size[0], self.size[1]), dtype='float32'))
@@ -101,9 +104,9 @@ class Generator(data.Dataset):
 
         labels_x_scalar = np.argmax(labels_x, 1)
 
-        return_arr = [torch.from_numpy(batch_x), torch.from_numpy(labels_x), torch.from_numpy(labels_x_scalar),
-                      torch.from_numpy(labels_x_global), batches_xi, labels_yi, oracles_yi,
-                      torch.from_numpy(hidden_labels)]
+        return_arr = [torch.from_numpy(batch_x), torch.from_numpy(labels_x),
+                      torch.from_numpy(labels_x_scalar), torch.from_numpy(labels_x_global),
+                      batches_xi, labels_yi, oracles_yi, torch.from_numpy(hidden_labels)]
 
         for i, tensor in enumerate(return_arr):
             if isinstance(tensor, list):

@@ -17,7 +17,7 @@ def get_parser():
     parser.add_argument('-n_way', type=int, default=5)
     parser.add_argument('-k_shot', type=int, default=2)
     parser.add_argument('-k_query', type=int, default=1)
-    parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
+    parser.add_argument('-gpu_id', type=int, nargs='+', default=0)   # TODO: volatile with basic_opt.py
     parser.add_argument('-im_size', type=int, default=224)
     parser.add_argument('-network', type=str, default='resnet18')
     parser.add_argument('-meta_batchsz_train', type=int, default=10000)

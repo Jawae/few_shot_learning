@@ -33,6 +33,6 @@ The refactored documents for each method are stored in the `doc` folder.
 
 - [ ] Support tier-ImageNet
 
-- [ ] Merge dataset processing unified within the repo (for now, there is a `gnn_specific`)
+- [x] Merge dataset processing unified within the repo (for now, there is a `gnn_specific`)
 
 - [ ] Support log visualizations in Visdom and/or TensorboardX

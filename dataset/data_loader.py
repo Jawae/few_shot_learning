@@ -29,12 +29,14 @@ def data_loader(opts):
 
         train_data = miniImagenet('dataset/miniImagenet/', mode='train',
                                   n_way=opts.n_way, k_shot=opts.k_shot, k_query=opts.k_query,
-                                  batchsz=opts.meta_batchsz_train, resize=opts.im_size, log_file=opts.log_file)
+                                  batchsz=opts.meta_batchsz_train, resize=opts.im_size,
+                                  log_file=opts.log_file, method=opts.method)
         train_db = DataLoader(train_data, opts.batch_sz, shuffle=True, num_workers=8, pin_memory=True)
 
         val_data = miniImagenet('dataset/miniImagenet/', mode='val',
                                 n_way=opts.n_way, k_shot=opts.k_shot, k_query=opts.k_query,
-                                batchsz=opts.meta_batchsz_test, resize=opts.im_size, log_file=opts.log_file)
+                                batchsz=opts.meta_batchsz_test, resize=opts.im_size,
+                                log_file=opts.log_file, method=opts.method)
         val_db = DataLoader(val_data, opts.batch_sz, shuffle=True, num_workers=2, pin_memory=True)
 
     elif opts.dataset == 'omniglot':

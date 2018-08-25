@@ -16,14 +16,14 @@ from tools.utils import print_log
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-dataset', type=str, default='omniglot')
-    # parser.add_argument('-dataset', type=str, default='mini-imagenet')
+    # parser.add_argument('-dataset', type=str, default='omniglot')
+    parser.add_argument('-dataset', type=str, default='mini-imagenet')
     parser.add_argument('-n_way', type=int, default=5)              # train_N_way
     parser.add_argument('-k_shot', type=int, default=2)             # train_N_shots
     parser.add_argument('-k_query', type=int, default=1)
     parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
 
-    parser.add_argument('-im_size', type=int, default=224)
+    parser.add_argument('-im_size', type=int, default=84)
     parser.add_argument('-meta_batchsz_train', type=int, default=10000)
     parser.add_argument('-meta_batchsz_test', type=int, default=200)
 
@@ -60,8 +60,6 @@ if opts.multi_gpu:
 
 
 # PREPARE DATA
-# train_loader = generator.Generator(args.dataset_root, args, partition='train', dataset=args.dataset)
-# io.cprint('Batch size: '+str(args.batch_size))
 train_db, val_db, _, _ = data_loader(opts)
 
 # MISC
@@ -97,25 +95,21 @@ for epoch in range(opts.nep):
 
     for step, batch in enumerate(train_db):
 
-        # TODO: get data here
-        # data = train_loader.get_task_batch(batch_size=args.batch_size, n_way=args.train_N_way,
-        #                                    unlabeled_extra=args.unlabeled_extra, num_shots=args.train_N_shots,
-        #                                    cuda=args.cuda, variable=True, device=device)
-        # [batch_x, label_x, _, _, batches_xi, labels_yi, oracles_yi, hidden_labels] = data
+        batch_x, label_x = batch[0].to(opts.device), batch[1].to(opts.device)
+        batches_xi = batch[2].permute(1, 0, 2, 3, 4).to(opts.device)
+        labels_yi = batch[3].permute(1, 0, 2).to(opts.device)
+        oracles_yi = batch[4].permute(1, 0, 2).to(opts.device)
+        hidden_labels = batch[5].to(opts.device)
 
         # Compute embedding from x and xi_s
         z = enc_nn(batch_x)[-1]
         zi_s = [enc_nn(batch_xi)[-1] for batch_xi in batches_xi]
 
         # Compute metric from embeddings
-        out_metric, out_logits = metric_nn(inputs=[z, zi_s, labels_yi, oracles_yi, hidden_labels])
-        logsoft_prob = F.log_softmax(out_logits)
+        out_metric, out_logits = metric_nn(inputs=[z, zi_s, list(labels_yi.unbind(0)), oracles_yi, hidden_labels])
+        logsoft_prob = F.log_softmax(out_logits, dim=-1)
 
         # Loss
-        # fixme why to cpu again?
-        # label_x_numpy = label_x.cpu().data.numpy()
-        # formatted_label_x = np.argmax(label_x_numpy, axis=1)
-        # formatted_label_x = Variable(torch.LongTensor(formatted_label_x))
         formatted_label_x = torch.argmax(label_x, dim=1)
         loss_d_metric = F.nll_loss(logsoft_prob, formatted_label_x)
 
@@ -135,19 +129,18 @@ for epoch in range(opts.nep):
             counter = 0
             total_loss = 0
 
-        # VALIDATION SET
-        if step % opts.iter_do_val == 0:
-            enc_nn.eval()
-            metric_nn.eval()
-
-            with torch.no_grad():
-                for j, batch_test in enumerate(val_db):
-                    NotImplementedError()
-                    # TODO
-
-            enc_nn.train()
-            metric_nn.train()
-            # show results, save model below
+        # # VALIDATION SET
+        # if step % opts.iter_do_val == 0:
+        #     enc_nn.eval()
+        #     metric_nn.eval()
+        #
+        #     with torch.no_grad():
+        #         for j, batch_test in enumerate(val_db):
+        #             NotImplementedError()
+        #             # TODO (test phase in gnn)
+        #     enc_nn.train()
+        #     metric_nn.train()
+        #     # show results, save model below
 
 
 
