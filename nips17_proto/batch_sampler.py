@@ -46,10 +46,8 @@ class PrototypicalBatchSampler(object):
 
     def __iter__(self):
         """yield a batch of indexes"""
-
         spc = self.sample_per_class
         cpi = self.classes_per_it
-
         for it in range(self.iterations):
             batch_size = spc * cpi
             batch = torch.LongTensor(batch_size)

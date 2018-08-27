@@ -13,10 +13,11 @@ from tools.utils import print_log, show_result
 
 def get_parser():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-dataset', type=str, default='mini-imagenet')
     parser.add_argument('-n_way', type=int, default=5)
     parser.add_argument('-k_shot', type=int, default=2)
     parser.add_argument('-k_query', type=int, default=1)
-    parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
+    parser.add_argument('-gpu_id', type=int, nargs='+', default=0)   # TODO: volatile with basic_opt.py
     parser.add_argument('-im_size', type=int, default=224)
     parser.add_argument('-network', type=str, default='resnet18')
     parser.add_argument('-meta_batchsz_train', type=int, default=10000)
@@ -46,7 +47,7 @@ params = sum([np.prod(p.size()) for p in model_parameters])
 print_log('Total params in the network: {}'.format(params), opts.log_file)
 
 # PREPARE DATA
-train_db, val_db = data_loader(opts)
+train_db, val_db, _, _ = data_loader(opts)
 
 # MISC
 optimizer = optim.Adam(net.parameters(), lr=opts.lr, weight_decay=opts.weight_decay)

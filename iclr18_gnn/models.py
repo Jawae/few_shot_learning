@@ -1,4 +1,4 @@
-from gnn_iclr import *
+from sub_module import *
 
 
 class EmbeddingOmniglot(nn.Module):
@@ -25,7 +25,7 @@ class EmbeddingOmniglot(nn.Module):
         self.bn4 = nn.BatchNorm2d(self.nef)
         # state size. (2*ndf) x 3 x 3
         self.fc_last = nn.Linear(3 * 3 * self.nef, self.emb_size, bias=False)
-        self.bn_last = nn.BatchNorm1d(self.emb_size)   # TODO: changed to 1d
+        self.bn_last = nn.BatchNorm1d(self.emb_size)   # TODO (high, check this): changed to 1d
 
     def forward(self, inputs):
         e1 = F.max_pool2d(self.bn1(self.conv1(inputs)), 2)
@@ -106,10 +106,14 @@ class MetricNN(nn.Module):
         if self.metric_network == 'gnn_iclr_nl':
             assert(self.args.train_N_way == self.args.test_N_way)
             num_inputs = self.emb_size + self.args.train_N_way
-            if self.args.dataset == 'mini_imagenet':
+
+            if self.args.dataset == 'mini-imagenet':
                 self.gnn_obj = GNN_nl(args, num_inputs, nf=96, J=1)
             elif 'omniglot' in self.args.dataset:
                 self.gnn_obj = GNN_nl_omniglot(args, num_inputs, nf=96, J=1)
+            else:
+                raise NameError('Unknown dataset')
+
         elif self.metric_network == 'gnn_iclr_active':
             assert(self.args.train_N_way == self.args.test_N_way)
             num_inputs = self.emb_size + self.args.train_N_way
@@ -119,10 +123,7 @@ class MetricNN(nn.Module):
 
     def gnn_iclr_forward(self, z, zi_s, labels_yi):
         # Creating WW matrix
-        zero_pad = Variable(torch.zeros(labels_yi[0].size()))
-        if self.args.cuda:
-            zero_pad = zero_pad.cuda()
-
+        zero_pad = torch.zeros(labels_yi[0].size()).to(self.args.device)  # TODO (mid, hyli): remove this?
         labels_yi = [zero_pad] + labels_yi
         zi_s = [z] + zi_s
 
@@ -131,17 +132,15 @@ class MetricNN(nn.Module):
         nodes = torch.cat(nodes, 1)
 
         logits = self.gnn_obj(nodes).squeeze(-1)
-        outputs = F.sigmoid(logits)
+        outputs = torch.sigmoid(logits)
 
         return outputs, logits
 
     def gnn_iclr_active_forward(self, z, zi_s, labels_yi, oracles_yi, hidden_layers):
         # Creating WW matrix
-        zero_pad = Variable(torch.ones(labels_yi[0].size())*1.0/labels_yi[0].size(1))
-        if self.args.cuda:
-            zero_pad = zero_pad.cuda()
-
-        labels_yi = [zero_pad] + labels_yi
+        zero_pad = torch.ones(labels_yi[0].size())*1.0/labels_yi[0].size(1)
+        zero_pad = zero_pad.to(self.args.device)
+        labels_yi = zero_pad + labels_yi
         zi_s = [z] + zi_s
 
         nodes = [torch.cat([label_yi, zi], 1) for zi, label_yi in zip(zi_s, labels_yi)]
@@ -169,35 +168,5 @@ class MetricNN(nn.Module):
             raise NotImplementedError
 
 
-class SoftmaxModule:
-    def __init__(self):
-        self.softmax_metric = 'log_softmax'
-
-    def forward(self, outputs):
-        if self.softmax_metric == 'log_softmax':
-            return F.log_softmax(outputs)
-        else:
-            raise NotImplementedError
 
 
-def load_model(model_name, args, io):
-    try:
-        model = torch.load('output/%s/models/%s.t7' % (args.exp_name, model_name))
-        io.cprint('Loading Parameters from the last trained %s Model' % model_name)
-        return model
-    except:
-        io.cprint('Initiallize new Network Weights for %s' % model_name)
-        pass
-    return None
-
-
-def create_models(args):
-    print(args.dataset)
-
-    if 'omniglot' == args.dataset:
-        enc_nn = EmbeddingOmniglot(args, 64)
-    elif 'mini_imagenet' == args.dataset:
-        enc_nn = EmbeddingImagenet(args, 128)
-    else:
-        raise NameError('Dataset ' + args.dataset + ' not knows')
-    return enc_nn, MetricNN(args, emb_size=enc_nn.emb_size)

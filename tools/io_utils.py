@@ -1,4 +1,5 @@
 import pickle
+# from the GNN method
 
 
 class IOStream:

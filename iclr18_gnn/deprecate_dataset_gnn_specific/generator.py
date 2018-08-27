@@ -3,7 +3,6 @@ import torch.utils.data as data
 import torch
 import numpy as np
 import random
-from torch.autograd import Variable
 from . import omniglot
 from . import mini_imagenet
 
@@ -40,21 +39,24 @@ class Generator(data.Dataset):
         for id_key, key in enumerate(self.data):
             self.class_encoder[key] = id_key
 
-    # def rotate_image(self, image, times):
-    #     rotated_image = np.zeros(image.shape)
-    #     for channel in range(image.shape[0]):
-    #         rotated_image[channel, :, :] = np.rot90(image[channel, :, :], k=times)
-    #     return rotated_image
+    def rotate_image(self, image, times):
+        rotated_image = np.zeros(image.shape)
+        for channel in range(image.shape[0]):
+            rotated_image[channel, :, :] = np.rot90(image[channel, :, :], k=times)
+        return rotated_image
 
     def get_task_batch(self, batch_size=5, n_way=20, num_shots=1, unlabeled_extra=0,
                        device='cpu', cuda=False, variable=False):
         # Init variables
         batch_x = np.zeros((batch_size, self.input_channels, self.size[0], self.size[1]), dtype='float32')
         labels_x = np.zeros((batch_size, n_way), dtype='float32')
+
         labels_x_global = np.zeros(batch_size, dtype='int64')
         target_distances = np.zeros((batch_size, n_way * num_shots), dtype='float32')
+
         hidden_labels = np.zeros((batch_size, n_way * num_shots + 1), dtype='float32')
         numeric_labels = []
+
         batches_xi, labels_yi, oracles_yi = [], [], []
         for i in range(n_way*num_shots):
             batches_xi.append(np.zeros((batch_size, self.input_channels, self.size[0], self.size[1]), dtype='float32'))
@@ -102,13 +104,10 @@ class Generator(data.Dataset):
 
         labels_x_scalar = np.argmax(labels_x, 1)
 
-        return_arr = [torch.from_numpy(batch_x), torch.from_numpy(labels_x), torch.from_numpy(labels_x_scalar),
-                      torch.from_numpy(labels_x_global), batches_xi, labels_yi, oracles_yi,
-                      torch.from_numpy(hidden_labels)]
-        # if cuda:
-        #     return_arr = self.cast_cuda(return_arr)
-        # if variable:
-        #     return_arr = self.cast_variable(return_arr)
+        return_arr = [torch.from_numpy(batch_x), torch.from_numpy(labels_x),
+                      torch.from_numpy(labels_x_scalar), torch.from_numpy(labels_x_global),
+                      batches_xi, labels_yi, oracles_yi, torch.from_numpy(hidden_labels)]
+
         for i, tensor in enumerate(return_arr):
             if isinstance(tensor, list):
                 for j, sub_tensor in enumerate(tensor):
@@ -118,18 +117,3 @@ class Generator(data.Dataset):
 
         return return_arr
 
-    # def cast_cuda(self, input):
-    #     if type(input) == type([]):
-    #         for i in range(len(input)):
-    #             input[i] = self.cast_cuda(input[i])
-    #     else:
-    #         return input.cuda()
-    #     return input
-    #
-    # def cast_variable(self, input):
-    #     if type(input) == type([]):
-    #         for i in range(len(input)):
-    #             input[i] = self.cast_variable(input[i])
-    #     else:
-    #         return Variable(input)
-    #     return input

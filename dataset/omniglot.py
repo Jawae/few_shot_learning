@@ -58,8 +58,7 @@ class OmniglotDataset(data.Dataset):
 
         self.idx_classes = index_classes(self.all_items)
 
-        paths, self.y = zip(*[self.get_path_label(pl)
-                              for pl in range(len(self))])
+        paths, self.y = zip(*[self._get_path_label(pl) for pl in range(len(self))])
 
         self.x = map(load_img, paths, range(len(paths)))
         self.x = list(self.x)
@@ -73,7 +72,7 @@ class OmniglotDataset(data.Dataset):
     def __len__(self):
         return len(self.all_items)
 
-    def get_path_label(self, index):
+    def _get_path_label(self, index):
         filename = self.all_items[index][0]
         rot = self.all_items[index][-1]
         img = str.join('/', [self.all_items[index][2], filename]) + rot

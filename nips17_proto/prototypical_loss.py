@@ -42,35 +42,22 @@ def prototypical_loss(input, target, n_support, **args):
     samples' features to each one of the barycentres, computes the
     log_probability for each n_query samples for each one of the current
     classes, of appartaining to a class c, loss and accuracy are then computed and returned
-
-    :param input: the model output for a batch of samples
-    :param target: ground truth for the above batch of samples
-    :param n_support: number of samples to keep in account when computing
-    barycentres, for each one of the current classes
-    :return:
     """
-    # TODO (hyli, high): why to cpu
-    target_cpu = target.to('cpu')
-    input_cpu = input.to('cpu')
 
     def supp_idxs(c):
-        # FIXME when torch will support where as np
-        return target_cpu.eq(c).nonzero()[:n_support].squeeze(1)
+        return target.eq(c).nonzero()[:n_support].squeeze(1)
 
-    # FIXME when torch.unique will be available on cuda too
-    classes = torch.unique(target_cpu)
+    classes = torch.unique(target)
     n_classes = len(classes)
-    # FIXME when torch will support where as np
     # assuming n_query, n_target constants
-    n_query = target_cpu.eq(classes[0].item()).sum().item() - n_support
+    n_query = target.eq(classes[0].item()).sum().item() - n_support
 
     support_idxs = list(map(supp_idxs, classes))
 
-    prototypes = torch.stack([input_cpu[idx_list].mean(0) for idx_list in support_idxs])
-    # FIXME when torch will support where as np
-    query_idxs = torch.stack(list(map(lambda c: target_cpu.eq(c).nonzero()[n_support:], classes))).view(-1)
+    prototypes = torch.stack([input[idx_list].mean(0) for idx_list in support_idxs])
+    query_idxs = torch.stack(list(map(lambda c: target.eq(c).nonzero()[n_support:], classes))).view(-1)
 
-    query_samples = input.to('cpu')[query_idxs]
+    query_samples = input[query_idxs]
     if args['distance'] == 'euclidean':
         dists = euclidean_dist(query_samples, prototypes)
     elif args['distance'] == 'cosine':
@@ -78,8 +65,7 @@ def prototypical_loss(input, target, n_support, **args):
 
     log_p_y = F.log_softmax(-dists, dim=1).view(n_classes, n_query, -1)
 
-    target_inds = torch.arange(0, n_classes)
-    target_inds = target_inds.view(n_classes, 1, 1)
+    target_inds = torch.arange(0, n_classes).view(n_classes, 1, 1).to(args['device'])
     target_inds = target_inds.expand(n_classes, n_query, 1).long()
 
     loss_val = -log_p_y.gather(2, target_inds).squeeze().view(-1).mean()

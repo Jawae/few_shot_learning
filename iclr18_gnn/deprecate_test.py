@@ -1,10 +1,9 @@
 import numpy as np
-import io_utils
+from tools import io_utils
 import sys
 import os
 sys.path.append(os.getcwd())
-from dataset.gnn_specific import generator
-from torch.autograd import Variable
+from deprecate_dataset_gnn_specific import generator
 
 
 def test_one_shot(args, model, test_samples=5000, partition='test', device='cuda'):

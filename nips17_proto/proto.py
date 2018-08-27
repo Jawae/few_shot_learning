@@ -14,8 +14,7 @@ from torch.optim.lr_scheduler import MultiStepLR, StepLR
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-dataset', type=str, default='omniglot')
-    # default='omniglot')
+    parser.add_argument('-dataset', type=str, default='omniglot')       # mini-imagenet
     # used in data_loader.py for omniglot
     parser.add_argument('-classes_per_it_tr', type=int, default=60)     # just the N-way
     parser.add_argument('-classes_per_it_val', type=int, default=5)
@@ -27,10 +26,6 @@ def get_parser():
     parser.add_argument('-num_query_val', type=int, default=15)         # just the k_query for validation
 
     parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
-    # parser.add_argument('-im_size', type=int, default=224)
-    # parser.add_argument('-network', type=str, default='resnet18')
-    # parser.add_argument('-meta_batchsz_train', type=int, default=10000)
-    # parser.add_argument('-meta_batchsz_test', type=int, default=200)
     parser.add_argument('-distance', type=str, help='cosine or euclidean', default='euclidean')
     return parser
 
@@ -85,7 +80,8 @@ for epoch in range(opts.nep):
         net.train()
         x, y = batch[0].to(opts.device), batch[1].to(opts.device)
         # TODO use k_query or not?
-        loss, acc = loss_fn(net(x), target=y, n_support=opts.k_shot, distance=opts.distance)
+        loss, acc = loss_fn(net(x), target=y, n_support=opts.k_shot,
+                            distance=opts.distance, device=opts.device)
 
         optimizer.zero_grad()
         loss.backward()
@@ -103,14 +99,15 @@ for epoch in range(opts.nep):
     val_iter = iter(val_db)
     net.eval()
     for batch in val_iter:
-        x, y = batch[0].to(opts.device), batch[0].to(opts.device)
-        loss, acc = loss_fn(net(x), target=y, n_support=opts.num_support_val, distance=opts.distance)
+        x, y = batch[0].to(opts.device), batch[1].to(opts.device)
+        loss, acc = loss_fn(net(x), target=y, n_support=opts.num_support_val,
+                            distance=opts.distance, device=opts.device)
         val_loss.append(loss.item())
         val_acc.append(acc.item())
     avg_loss = np.mean(val_loss[-opts.iterations:])
     avg_acc = np.mean(val_acc[-opts.iterations:])
     postfix = ' (Best)' if avg_acc >= best_acc else ' (Best: {:.5f})'.format(best_acc)
-    print_log('Avg Val Loss: {:.5f}, Avg Val Acc: {}{}'.format(avg_loss, avg_acc, postfix), opts.log_file)
+    print_log('Avg Val Loss: {:.5f}, Avg Val Acc: {:.5f}{}'.format(avg_loss, avg_acc, postfix), opts.log_file)
     if avg_acc >= best_acc:
         best_acc = avg_acc
         if opts.multi_gpu:
@@ -132,7 +129,8 @@ if best_state is not None:
         for batch in test_iter:
             x, y = batch
             x, y = batch[0].to(opts.device), batch[1].to(opts.device)
-            _, acc = loss_fn(net(x), target=y, n_support=opts.k_shot, distance=opts.distance)
+            _, acc = loss_fn(net(x), target=y, n_support=opts.k_shot,
+                             distance=opts.distance, device=opts.device)
             avg_acc.append(acc.item())
     avg_acc = np.mean(avg_acc)
     print_log('Test Acc: {:.6f}'.format(avg_acc), opts.log_file)
