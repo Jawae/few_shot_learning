@@ -24,7 +24,7 @@ For more information on how to obtain the images check the original source [Ravi
         ```
         python tools/download_gdrive.py 1hqVbS2nhHXa51R9_aB6QDXeC0P2LQG_u tier-imagenet.tar
         ```
-    - create a symlink to the raw file: `ln -s /path/to/data dataset/tier-raw`
+    - create a symlink to the raw file: `ln -s /path/to/data dataset/tier-imagenet`
 
 ### Structure
 

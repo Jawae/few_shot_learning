@@ -91,7 +91,7 @@ class miniImagenet(Dataset):
     def _loadCSV(csvf):
         """
         return a dict saving the information of csv
-        :param splitFile: csv file name
+        :param csvf: csv file name
         :return: {label:[file1, file2 ...]}
         """
         dictLabels = {}

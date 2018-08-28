@@ -17,7 +17,8 @@ from tools.utils import print_log
 def get_parser():
     parser = argparse.ArgumentParser()
     # parser.add_argument('-dataset', type=str, default='omniglot')
-    parser.add_argument('-dataset', type=str, default='mini-imagenet')
+    # parser.add_argument('-dataset', type=str, default='mini-imagenet')
+    parser.add_argument('-dataset', type=str, default='tier-imagenet')
     parser.add_argument('-n_way', type=int, default=5)              # train_N_way
     parser.add_argument('-k_shot', type=int, default=2)             # train_N_shots
     parser.add_argument('-k_query', type=int, default=1)
@@ -29,7 +30,7 @@ def get_parser():
 
     parser.add_argument('-unlabeled_extra', type=int, default=0, help='Number of shots when training')
     parser.add_argument('-metric_network', type=str, default='gnn_iclr_nl', help='gnn_iclr_nl' + 'gnn_iclr_active')
-    parser.add_argument('-active_random', type=int, default=0, help='random active ? ')
+    parser.add_argument('-active_random', type=int, default=0, help='random active ?')
     return parser
 
 
@@ -41,10 +42,11 @@ setup(opts)
 # CREATE MODEL
 if opts.dataset == 'omniglot':
     enc_nn = EmbeddingOmniglot(opts, 64).to(opts.device)
-elif opts.dataset == 'mini-imagenet':
+elif opts.dataset == 'mini-imagenet' or opts.dataset == 'tier-imagenet':
     enc_nn = EmbeddingImagenet(opts, 128).to(opts.device)
+else:
+    raise NameError('unknown dataset')
 metric_nn = MetricNN(opts, emb_size=enc_nn.emb_size).to(opts.device)
-print('test')
 
 # RESUME (fixme with appropriate epoch and iter)
 if os.path.exists(opts.model_file) and os.path.exists(opts.model_file2):
@@ -89,9 +91,9 @@ for epoch in range(opts.nep):
     new_lr = opt_enc_nn.param_groups[0]['lr']
 
     if epoch == 0:
-        print_log('\tInitial lr is {:.8f}\n'.format(old_lr), opts.log_file)
+        print_log('\nInitial lr is {:.8f}\n'.format(old_lr), opts.log_file)
     if new_lr != old_lr:
-        print_log('\tLR changes from {:.8f} to {:.8f} at epoch {:d}\n'.format(old_lr, new_lr, epoch), opts.log_file)
+        print_log('\nLR changes from {:.8f} to {:.8f} at epoch {:d}\n'.format(old_lr, new_lr, epoch), opts.log_file)
 
     for step, batch in enumerate(train_db):
 

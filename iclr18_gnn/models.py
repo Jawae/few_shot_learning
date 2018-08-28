@@ -48,8 +48,7 @@ class EmbeddingOmniglot(nn.Module):
 
 
 class EmbeddingImagenet(nn.Module):
-    """In this network the input image is supposed to be 28x28"""
-
+    """In this network the input image is supposed to be 84x84"""
     def __init__(self, args, emb_size):
         super(EmbeddingImagenet, self).__init__()
         self.emb_size = emb_size
@@ -107,7 +106,7 @@ class MetricNN(nn.Module):
             assert(self.args.train_N_way == self.args.test_N_way)
             num_inputs = self.emb_size + self.args.train_N_way
 
-            if self.args.dataset == 'mini-imagenet':
+            if self.args.dataset == 'mini-imagenet' or 'tier-imagenet':
                 self.gnn_obj = GNN_nl(args, num_inputs, nf=96, J=1)
             elif 'omniglot' in self.args.dataset:
                 self.gnn_obj = GNN_nl_omniglot(args, num_inputs, nf=96, J=1)

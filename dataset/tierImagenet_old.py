@@ -10,7 +10,7 @@ from tools.utils import print_log
 
 
 class tierImagenet(Dataset):
-
+    """directly refactored from the miniImagenet.py file"""
     def __init__(self, root, mode, batchsz, n_way, k_shot, k_query, resize, startidx=0,
                  log_file=None, method=None):
 
@@ -34,8 +34,9 @@ class tierImagenet(Dataset):
             T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
         ])
 
-        self.path = os.path.join(root, 'images')
-        csvdata = self._loadCSV(os.path.join(root, mode + '.csv'))
+        self.im_path = root
+        self.split_path = 'dataset/tier-split'
+        csvdata = self._loadCSV(os.path.join(self.split_path, mode + '.csv'))
         self.data = []                  # [[img1, img2, ...], [img111, img222, ...]]
         self.img2label = {}             # {"img_name[:9]": label}
         for i, (k, v) in enumerate(csvdata.items()):
@@ -58,7 +59,7 @@ class tierImagenet(Dataset):
     def _loadCSV(csvf):
         """
         return a dict saving the information of csv
-        :param splitFile: csv file name
+        :param csvf: csv file name
         :return: {label:[file1, file2 ...]}
         """
         dictLabels = {}

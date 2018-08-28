@@ -1,5 +1,6 @@
 from torch.utils.data import DataLoader
-from dataset.tierImagenet import tierImagenet
+from dataset.tierImagenet_old import tierImagenet
+from dataset.tiered_imagenet import TieredImageNetDataset
 from dataset.miniImagenet import miniImagenet
 from dataset.omniglot import OmniglotDataset
 from tools.utils import print_log
@@ -41,16 +42,20 @@ def data_loader(opts):
 
     elif opts.dataset == 'tier-imagenet':
 
-        train_data = tierImagenet('dataset/tierImagenet/', mode='train',
-                                  n_way=opts.n_way, k_shot=opts.k_shot, k_query=opts.k_query,
-                                  batchsz=opts.meta_batchsz_train, resize=opts.im_size,
-                                  log_file=opts.log_file, method=opts.method)
+        # train_data = tierImagenet('dataset/tier-imagenet/', mode='train',
+        #                           n_way=opts.n_way, k_shot=opts.k_shot, k_query=opts.k_query,
+        #                           batchsz=opts.meta_batchsz_train, resize=opts.im_size,
+        #                           log_file=opts.log_file, method=opts.method)
+        train_data = TieredImageNetDataset(
+            'dataset/tier-imagenet/', 'train',
+            nway=opts.n_way, nshot=opts.k_shot, resize=opts.im_size,
+            log_file=opts.log_file, method=opts.method)
         train_db = DataLoader(train_data, opts.batch_sz, shuffle=True, num_workers=8, pin_memory=True)
 
-        val_data = tierImagenet('dataset/tierImagenet/', mode='val',
-                                n_way=opts.n_way, k_shot=opts.k_shot, k_query=opts.k_query,
-                                batchsz=opts.meta_batchsz_test, resize=opts.im_size,
-                                log_file=opts.log_file, method=opts.method)
+        val_data = TieredImageNetDataset(
+            'dataset/tier-imagenet/', 'val',
+            nway=opts.n_way, nshot=opts.k_query, resize=opts.im_size,
+            log_file=opts.log_file, method=opts.method)
         val_db = DataLoader(val_data, opts.batch_sz, shuffle=True, num_workers=2, pin_memory=True)
 
     elif opts.dataset == 'omniglot':

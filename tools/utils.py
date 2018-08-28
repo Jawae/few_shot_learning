@@ -90,3 +90,6 @@ def show_result(opts, support_x, support_y, query_x, query_y, query_pred,
     print('label for pred   :', query_pred.data[batchidx].cpu().numpy())
 
     return all_img, max_width
+
+
+# the following functions are from tier-imagenet
