@@ -9,33 +9,11 @@ import random
 from tools.utils import print_log
 
 
-class miniImagenet(Dataset):
-    """
-    put mini-imagenet files as:
-        root :
-        |- images/*.jpg includes all images
-        |- train.csv
-        |- test.csv
-        |- val.csv
-
-    NOTICE:
-    meta-learning is different from general supervised learning, especially the concept of batch and set.
-    batch: contains several sets
-    sets: contains n_way * k_shot for meta-train set, n_way * n_query for meta-test set.
-"""
-
+class tierImagenet(Dataset):
+    """directly refactored from the miniImagenet.py file"""
     def __init__(self, root, mode, batchsz, n_way, k_shot, k_query, resize, startidx=0,
                  log_file=None, method=None):
-        """
-        :param root: root path of mini-imagenet
-        :param mode: train, val or test
-        :param batchsz: batch size of sets, not batch of images
-        :param n_way:
-        :param k_shot:
-        :param k_query: num of query images per class
-        :param resize:
-        :param startidx: start to index label from startidx
-        """
+
         self.method = method
         self.batchsz = batchsz
         self.n_way = n_way
@@ -49,17 +27,6 @@ class miniImagenet(Dataset):
         print_log('\t\t%s, b:%d, %d-way, %d-shot, %d-query, resize:%d' %
                   (mode, batchsz, n_way, k_shot, k_query, resize), log_file)
 
-        # if mode == 'train':
-        # 	self.transform = transforms.Compose([lambda x: Image.open(x).convert('RGB'),
-        # 	                                     transforms.RandomResizedCrop(self.resize, scale=(0.8, 1.0)),
-        # 	                                     # transforms.RandomHorizontalFlip(),
-        # 	                                     # transforms.RandomVerticalFlip(),
-        # 	                                     transforms.RandomRotation(15),
-        # 	                                     transforms.ColorJitter(0.1, 0.1, 0.2, 0),
-        # 	                                     transforms.ToTensor(),
-        # 	                                     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
-        # 	                                     ])
-        # else:
         self.transform = T.Compose([
             lambda x: Image.open(x).convert('RGB'),
             T.Resize((self.resize, self.resize)),
@@ -67,8 +34,9 @@ class miniImagenet(Dataset):
             T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
         ])
 
-        self.path = os.path.join(root, 'images')
-        csvdata = self._loadCSV(os.path.join(root, mode + '.csv'))
+        self.im_path = root
+        self.split_path = 'dataset/tier-split'
+        csvdata = self._loadCSV(os.path.join(self.split_path, mode + '.csv'))
         self.data = []                  # [[img1, img2, ...], [img111, img222, ...]]
         self.img2label = {}             # {"img_name[:9]": label}
         for i, (k, v) in enumerate(csvdata.items()):

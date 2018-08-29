@@ -6,7 +6,8 @@ Refactored by [@hli2020](https://github.com/hli2020). This repo contains:
 
 - Few-shot learning with graph neural networks, denoted as `iclr18_gnn`. Forked repo.
 
-- Learning to compare: relation network for few-shot learning.
+- Learning to compare: relation network for few-shot learning, 
+denoted as `cvpr18_relation`.
 [Forked repo](https://github.com/dragen1860/LearningToCompare-Pytorch).
 
 ## Overview

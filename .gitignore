@@ -1,6 +1,13 @@
 # Custom
 *.swp
 *.nfs*
+*tier-imagenet.tar
+*.npz*
+*.pkl*
+*_labelsplit*
+# this is a symlink
+#dataset/tier-imagenet 
+dataset/tier_imagenet
 dataset/omniglot
 dataset/miniImagenet/images*
 output/
