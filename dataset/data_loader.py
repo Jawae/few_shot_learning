@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader
-from dataset.tierImagenet_old import tierImagenet
+from dataset.tierImagenet import tierImagenet
 from dataset.tiered_imagenet import TieredImageNetDataset
 from dataset.miniImagenet import miniImagenet
 from dataset.omniglot import OmniglotDataset
