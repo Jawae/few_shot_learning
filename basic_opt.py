@@ -11,11 +11,6 @@ def get_basic_parser(parser):
     parser.add_argument('-root',
                         type=str,
                         default='output')
-    # parser.add_argument('-dataset',
-    #                     type=str,
-    #                     default='mini-imagenet')
-    #                     # default='omniglot')
-
     # output folder: output/METHOD/DATASET/exp_name
     parser.add_argument('-exp_name', type=str, default='default')
 
@@ -54,14 +49,10 @@ def get_basic_parser(parser):
                         type=int,
                         help='input for the manual seeds initializations',
                         default=7)
+    parser.add_argument('-gpu_id', type=int, nargs='+', default=0)
 
-    parser.add_argument('-device_id',
-                        type=int,
-                        nargs='+',
-                        help='put -1 if in CPU mode',
-                        default=0)
     # TODO (low): debug mode smaller interval
-    parser.add_argument('-iter_vis_loss', type=int, default=100)
+    parser.add_argument('-iter_vis_loss', type=int, default=25)
     parser.add_argument('-iter_do_val', type=int, default=2000)
 
     # TODO: visualization
@@ -77,7 +68,7 @@ def setup(opt2):
     torch.cuda.manual_seed(opt2.manual_seed)
 
     # opt2.__dict__.update(opt1.__dict__)i
-    opt2.gpu_id = opt2.device_id
+    # opt2.gpu_id = opt2.device_id
     opt2.output_folder = os.path.join(opt2.root, opt2.method, opt2.dataset, opt2.exp_name)
     if not os.path.exists(opt2.output_folder):
         os.makedirs(opt2.output_folder)

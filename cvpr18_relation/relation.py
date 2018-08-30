@@ -13,15 +13,15 @@ from tools.utils import print_log, show_result
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-dataset', type=str, default='mini-imagenet')
+    # parser.add_argument('-dataset', type=str, default='mini-imagenet')
+    parser.add_argument('-dataset', type=str, default='tier-imagenet')
     parser.add_argument('-n_way', type=int, default=5)
-    parser.add_argument('-k_shot', type=int, default=2)
-    parser.add_argument('-k_query', type=int, default=1)
-    parser.add_argument('-gpu_id', type=int, nargs='+', default=0)   # TODO: volatile with basic_opt.py
-    parser.add_argument('-im_size', type=int, default=224)
+    parser.add_argument('-k_shot', type=int, default=5)
+    parser.add_argument('-k_query', type=int, default=5)
+    parser.add_argument('-im_size', type=int, default=84)
     parser.add_argument('-network', type=str, default='resnet18')
-    parser.add_argument('-meta_batchsz_train', type=int, default=10000)
-    parser.add_argument('-meta_batchsz_test', type=int, default=200)
+    # parser.add_argument('-meta_batchsz_train', type=int, default=10000)
+    # parser.add_argument('-meta_batchsz_test', type=int, default=200)
     return parser
 
 
@@ -98,10 +98,10 @@ for epoch in range(opts.nep):
             print_log(opts.loss_vis_str.format(total_ep, epoch, total_iter, step, loss.item()), opts.log_file)
 
         # VALIDATION SET
-        if step % opts.iter_do_val == 0:
+        if step % opts.iter_do_val == 0 and step > 0:
 
             total_correct, total_num, display_onebatch = 0, 0, False
-
+            print_log('evaluating at step {} ...'.format(step), opts.log_file)
             with torch.no_grad():
                 for j, batch_test in enumerate(val_db):
                     net.eval()

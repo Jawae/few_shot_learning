@@ -32,7 +32,7 @@ The refactored documents for each method are stored in the `doc` folder.
 
 ## TODO list
 
-- [ ] Support tier-ImageNet
+- [x] Support tier-ImageNet
 
 - [x] Merge dataset processing unified within the repo (for now, there is a `gnn_specific`)
 

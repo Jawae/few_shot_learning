@@ -139,7 +139,7 @@ class Relation(nn.Module):
         # this is the input channels of layer4 and layer5
         self.inplanes = 2 * self.c
         assert repnet_sz[2] == repnet_sz[3]
-        print_log('\t\trepnet sz: {}'.format(repnet_sz), opts.log_file)
+        print_log('\t\trepnet sz: {} (assume bs=2)'.format(repnet_sz), opts.log_file)
 
         # after the relation module
         self.layer4 = self._make_layer(Bottleneck, 128, 4, stride=2)
@@ -155,7 +155,7 @@ class Relation(nn.Module):
         combine = torch.stack([repnet_out, repnet_out], dim=1).view(
             repnet_out.size(0), -1, repnet_out.size(2), repnet_out.size(3))
         out = self.layer5(self.layer4(combine))
-        print_log('\t\tafter layer5 sz: {}'.format(out.size()), opts.log_file)
+        print_log('\t\tafter layer5 sz: {} (assume bs=2)'.format(out.size()), opts.log_file)
         self.pool_size = out.size(2)
 
     def _make_layer(self, block, planes, blocks, stride=1):

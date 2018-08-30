@@ -1,5 +1,7 @@
 """Dataset API for tieredImageNet
 Author: Eleni Triantafillou (eleni@cs.toronto.edu)
+
+Refactored by Hongyang; barely used.
 """
 from __future__ import (absolute_import, division, print_function, unicode_literals)
 
@@ -14,38 +16,11 @@ import numpy as np
 import six
 import pickle as pkl
 
+import torch
 from tools.utils import print_log
 from torch.utils.data import Dataset
 from torchvision.transforms import transforms as T
-
-
-# def compress(path, output):
-#     with np.load(path, mmap_mode="r") as data:
-#         images = data["images"]
-#         array = []
-#         for ii in tqdm(six.moves.xrange(images.shape[0]), desc='compress'):
-#             im = images[ii]
-#             im_str = cv2.imencode('.png', im)[1]
-#             array.append(im_str)
-#     with open(output, 'wb') as f:
-#         pkl.dump(array, f, protocol=pkl.HIGHEST_PROTOCOL)
-
-
-def decompress(path, output):
-    with open(output, 'rb') as f:
-        # try:
-        #     array = pkl.load(f)
-        # except:
-        # u = pickle._Unpickler(f)
-        # u.encoding = 'latin1'
-        array = pkl.load(f, encoding='latin1')
-
-    print_log('decompressing the raw data: {} to {} ...'.format(output, path))
-    images = np.zeros([len(array), 84, 84, 3], dtype=np.uint8)   # TODO (default: im_size is 84), fix it!
-    for ii, item in tqdm(enumerate(array), desc='decompress'):
-        im = cv2.imdecode(item, 1)
-        images[ii] = im
-    np.savez(path, images=images)
+from tools.utils import decompress
 
 
 class TieredImageNetDataset(Dataset):
@@ -70,8 +45,8 @@ class TieredImageNetDataset(Dataset):
                             bool. Whether to use specific or general labels.
         """
 
-        self._splits_folder = 'dataset/tier-split'
-        self._data_folder = folder
+        self._splits_folder = 'dataset/tier_split'      # labels/synset info/etc (already in the repo)
+        self._data_folder = folder                      # raw images
         print_log('\nsplit set: {}'.format(split))
         print_log("\tnum unlabel {}".format(num_unlabel), log_file)
         print_log("\tnum test {}".format(num_test), log_file)
@@ -90,12 +65,12 @@ class TieredImageNetDataset(Dataset):
         self._shuffle_episode = shuffle_episode
         self._label_ratio = label_ratio
 
-        self.transform = T.Compose([
-            lambda x: Image.open(x).convert('RGB'),
-            T.Resize((self.resize, self.resize)),
-            T.ToTensor(),
-            T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
-        ])
+        # self.transform = T.Compose([
+        #     lambda x: Image.open(x).convert('RGB'),
+        #     T.Resize((self.resize, self.resize)),
+        #     T.ToTensor(),
+        #     T.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+        # ])
 
         # generate the following variables: see line 216
         # self._label_specific
@@ -491,17 +466,21 @@ class TieredImageNetDataset(Dataset):
             else:
                 # Copy test set for refinement.
                 # This will only work if the test procedure is rolled out in a sequence.
-                train_unlabel_img_ids.extend(_label_ids[
-                                             self._nshot + num_test:self._nshot + num_test + self._num_unlabel])
+                train_unlabel_img_ids.extend(
+                    _label_ids[self._nshot + num_test:self._nshot + num_test + self._num_unlabel]
+                )
 
         train_img = self.get_images(train_img_ids) / 255.0
-        train_unlabel_img = self.get_images(train_unlabel_img_ids) / 255.0
-        test_img = self.get_images(test_img_ids) / 255.0
         train_labels = np.array(train_labels)
+
+        test_img = self.get_images(test_img_ids) / 255.0
         test_labels = np.array(test_labels)
+
+        train_unlabel_img = self.get_images(train_unlabel_img_ids) / 255.0
+        non_distractor = np.array(non_distractor)
+
         train_labels_str = np.array(train_labels_str)
         test_labels_str = np.array(test_labels_str)
-        non_distractor = np.array(non_distractor)
 
         test_ids_set = set(test_img_ids)
         for _id in train_unlabel_img_ids:
@@ -509,8 +488,8 @@ class TieredImageNetDataset(Dataset):
 
         if self._shuffle_episode:
             # log.fatal('')
-            # Shuffle the sequence order in an episode. Very important for RNN based
-            # meta learners.
+            # Shuffle the sequence order in an episode.
+            # Very important for RNN based meta learners.
             train_idx = np.arange(train_img.shape[0])
             self._rnd.shuffle(train_idx)
             train_img = train_img[train_idx]
@@ -525,15 +504,18 @@ class TieredImageNetDataset(Dataset):
             test_img = test_img[test_idx]
             test_labels = test_labels[test_idx]
 
-        return Episode(
-            train_img,
-            train_labels,
-            test_img,
-            test_labels,
-            x_unlabel=train_unlabel_img,
-            y_unlabel=non_distractor,
-            y_train_str=train_labels_str,
-            y_test_str=test_labels_str)
+        # ndarrays below; haven't transferred to torch.tensor
+        return [
+                   train_img,
+                   train_labels,
+                   test_img,
+                   test_labels
+               ], {
+            'x_unlabel': train_unlabel_img,
+            'y_unlabel': non_distractor,
+            'y_train_str': train_labels_str,
+            'y_test_str': test_labels_str
+        }    # in tensorflow, it's wrappd in Episode
 
     def get_images(self, inds=None):
         imgs = self._images[inds]

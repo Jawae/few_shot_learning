@@ -1,6 +1,8 @@
 import os
 import torch
 import numpy as np
+import pickle as pkl
+import cv2
 
 
 def remove(file_name):
@@ -93,3 +95,25 @@ def show_result(opts, support_x, support_y, query_x, query_y, query_pred,
 
 
 # the following functions are from tier-imagenet
+# def compress(path, output):
+#     with np.load(path, mmap_mode="r") as data:
+#         images = data["images"]
+#         array = []
+#         for ii in tqdm(six.moves.xrange(images.shape[0]), desc='compress'):
+#             im = images[ii]
+#             im_str = cv2.imencode('.png', im)[1]
+#             array.append(im_str)
+#     with open(output, 'wb') as f:
+#         pkl.dump(array, f, protocol=pkl.HIGHEST_PROTOCOL)
+
+
+def decompress(path, output):
+    with open(output, 'rb') as f:
+        array = pkl.load(f, encoding='latin1')
+
+    print_log('\t\ndecompressing the raw data: {} to {} ...'.format(output, path))
+    images = np.zeros([len(array), 84, 84, 3], dtype=np.uint8)
+    for ii, item in enumerate(array):
+        im = cv2.imdecode(item, 1)
+        images[ii] = im
+    np.savez(path, images=images)
