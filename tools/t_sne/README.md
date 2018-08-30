@@ -10,4 +10,4 @@ This t-sne folder is a little bit
 
 The training dynamics is visualized below:
 
-![MNIST t-SNE](archive/scatter.gif)
+![MNIST t-SNE](tools/t_sne/scatter.gif)
