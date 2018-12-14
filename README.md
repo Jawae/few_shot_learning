@@ -37,3 +37,12 @@ The refactored documents for each method are stored in the `doc` folder.
 - [x] Merge dataset processing unified within the repo (for now, there is a `gnn_specific`)
 
 - [ ] Support log visualizations in Visdom and/or TensorboardX
+
+
+### Dependencies
+
+- (You might need) to install `opencv`:
+    ```shell
+    conda install -c defaults libprotobuf protobuf
+    conda install -c conda-forge opencv
+    ```
